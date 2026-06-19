@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminActivity;
 use App\Models\Employee;
 use App\Models\PendingEmployee;
+use App\Models\PendingStudent;
 use App\Models\Program;
 use App\Models\Role;
+use App\Services\AdminActivityLogger;
 use App\Support\MiddleInitial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,9 +27,12 @@ class PendingEmployeeController extends Controller
 
     public function index()
     {
-        $pending = PendingEmployee::with('role')->latest()->get();
+        $pendingStudents = PendingStudent::with('role')->latest()->get();
+        $pendingEmployees = PendingEmployee::with('role')->latest()->get();
+        $defaultTab = 'employees';
+        $backRoute = route('employees.index');
 
-        return view('pending.index', compact('pending'));
+        return view('pending.index', compact('pendingStudents', 'pendingEmployees', 'defaultTab', 'backRoute'));
     }
 
     public function store(Request $request)

@@ -16,10 +16,12 @@ class PendingStudentController extends Controller
     
     public function index()
     {
-        $pendingEmployees = \App\Models\PendingEmployee::with('role')->get();
-        $pendingStudents = PendingStudent::with('role')->paginate(10);
-        
-        return view('pending.index', compact('pendingStudents', 'pendingEmployees'));
+        $pendingEmployees = PendingEmployee::with('role')->latest()->get();
+        $pendingStudents = PendingStudent::with('role')->latest()->get();
+        $defaultTab = 'students';
+        $backRoute = route('students.index');
+
+        return view('pending.index', compact('pendingStudents', 'pendingEmployees', 'defaultTab', 'backRoute'));
     }
 
     public function create()

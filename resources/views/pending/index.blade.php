@@ -26,7 +26,7 @@
             <button id="showStudents" class="btn btn-primary me-2">View Students</button>
             <button id="showEmployees" class="btn btn-outline-primary">View Employees</button>
         </div>
-        <a href="{{ route('students.index') }}" class="btn btn-secondary">
+        <a href="{{ $backRoute ?? route('students.index') }}" class="btn btn-secondary">
             ← Back to Registered
         </a>
     </div>
@@ -144,6 +144,7 @@
     const employeeTable = document.getElementById('employeeTable');
     const btnStudents = document.getElementById('showStudents');
     const btnEmployees = document.getElementById('showEmployees');
+    const defaultTab = @json($defaultTab ?? 'students');
 
     btnStudents.addEventListener('click', () => {
         studentTable.classList.remove('hidden');
@@ -158,6 +159,10 @@
         btnEmployees.classList.replace('btn-outline-primary', 'btn-primary');
         btnStudents.classList.replace('btn-primary', 'btn-outline-primary');
     });
+
+    if (defaultTab === 'employees') {
+        btnEmployees.click();
+    }
 </script>
 
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>

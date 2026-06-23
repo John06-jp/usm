@@ -7,6 +7,8 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BookLogController;
 use App\Http\Controllers\RFIDScanController;
 use App\Http\Controllers\BookImportController; 
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EbookController;
 use App\Http\Controllers\ProspectusController;
@@ -60,6 +62,15 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+});
 Route::get('/index', fn() => redirect()->route('book.index'));
 Route::get('/filter/years', [BookController::class, 'getYears']);
 Route::get('/filter/courses', [BookController::class, 'getCourses']);
@@ -169,6 +180,7 @@ Route::middleware(['auth', 'can:isAdminOrStaff'])->group(function () {
         ->name('catalog.copy.openlibrary.store');
 
     Route::get('/feedbacks', [FeedbackController::class, 'index'])->name('feedback.index');
+    Route::get('/feedbacks/export/csv', [FeedbackController::class, 'exportCsv'])->name('feedback.export.csv');
 
     Route::get('/holidays/list', [HolidayController::class, 'list'])->name('holidays.list');
     Route::post('/holidays/toggle', [HolidayController::class, 'toggle'])->name('holidays.toggle');

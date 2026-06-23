@@ -231,7 +231,7 @@
                 </div>
 
                 <div class="d-flex justify-content-center mt-3">
-                    {{ $books->withQueryString()->links('pagination::bootstrap-5') }}
+                    @include('layouts.partials.pagination_bar', ['paginator' => $books])
                 </div>
             </div>
 

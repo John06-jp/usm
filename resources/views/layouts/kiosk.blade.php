@@ -12,6 +12,7 @@
 
     @stack('styles')
     @yield('styles')
+    <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
 
     <style>
         html, body { height: 100%; }

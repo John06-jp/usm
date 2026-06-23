@@ -38,7 +38,7 @@ export default function BooksIndex({ books, programs, filters, hasActiveQuery })
                         {hasActiveQuery ? (
                             <>
                                 <CatalogResultsSummary books={books} filters={filters} />
-                                <CatalogResultsTable books={books} />
+                                <CatalogResultsTable books={books} perPage={filters.per_page} />
                             </>
                         ) : (
                             <CatalogEmptyState />

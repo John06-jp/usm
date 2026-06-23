@@ -120,7 +120,7 @@
     </div>
 
     <div class="d-flex justify-content-center">
-        {{ $logs->links('pagination::bootstrap-5') }}
+        @include('layouts.partials.pagination_bar', ['paginator' => $logs])
     </div>
 </div>
 @endsection

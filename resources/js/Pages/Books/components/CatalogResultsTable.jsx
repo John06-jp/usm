@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { PerPageSelect } from '@/components/PerPageSelect';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -95,7 +96,7 @@ function AvailabilityBadge({ availability }) {
     );
 }
 
-export function CatalogResultsTable({ books }) {
+export function CatalogResultsTable({ books, perPage }) {
     const [deleteTarget, setDeleteTarget] = useState(null);
 
     function confirmDelete() {
@@ -174,37 +175,41 @@ export function CatalogResultsTable({ books }) {
                 </CardContent>
             </Card>
 
-            {books.links?.length > 3 ? (
-                <nav
-                    className="mt-4 flex flex-wrap items-center justify-center gap-1"
-                    aria-label="Catalog pagination"
-                >
-                    {books.links.map((link, index) =>
-                        link.url ? (
-                            <Button
-                                key={`${link.label}-${index}`}
-                                asChild
-                                size="sm"
-                                variant={link.active ? 'default' : 'outline'}
-                            >
-                                <Link
-                                    href={link.url}
-                                    preserveScroll
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <PerPageSelect perPage={perPage} />
+
+                {books.links?.length > 3 ? (
+                    <nav
+                        className="flex flex-wrap items-center justify-end gap-1"
+                        aria-label="Catalog pagination"
+                    >
+                        {books.links.map((link, index) =>
+                            link.url ? (
+                                <Button
+                                    key={`${link.label}-${index}`}
+                                    asChild
+                                    size="sm"
+                                    variant={link.active ? 'default' : 'outline'}
+                                >
+                                    <Link
+                                        href={link.url}
+                                        preserveScroll
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                </Button>
+                            ) : (
+                                <Button
+                                    key={`${link.label}-${index}`}
+                                    size="sm"
+                                    variant="outline"
+                                    disabled
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
-                            </Button>
-                        ) : (
-                            <Button
-                                key={`${link.label}-${index}`}
-                                size="sm"
-                                variant="outline"
-                                disabled
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                            />
-                        ),
-                    )}
-                </nav>
-            ) : null}
+                            ),
+                        )}
+                    </nav>
+                ) : null}
+            </div>
 
             <Dialog open={Boolean(deleteTarget)} onOpenChange={() => setDeleteTarget(null)}>
                 <DialogContent showCloseButton={false}>

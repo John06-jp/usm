@@ -78,7 +78,7 @@
                 </table>
             </div>
             <div class="p-3 border-top">
-                {{ $logs->links('pagination::bootstrap-5') }}
+                @include('layouts.partials.pagination_bar', ['paginator' => $logs])
             </div>
         @else
             <div class="rooms-empty">

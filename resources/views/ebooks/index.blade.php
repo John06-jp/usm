@@ -172,7 +172,7 @@
                 </div>
 
                 <div class="mt-3 d-flex justify-content-center">
-                    {{ $ebooks->appends(request()->query())->links('pagination::bootstrap-5') }}
+                    @include('layouts.partials.pagination_bar', ['paginator' => $ebooks])
                 </div>
             @else
                 <div class="ebooks-card ebooks-empty">

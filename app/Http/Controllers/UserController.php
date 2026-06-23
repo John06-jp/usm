@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\AdminActivity;
@@ -48,10 +49,18 @@ class UserController extends Controller
     }
     
     // show user
-   public function index()
+   public function index(Request $request)
     {
-        $users = User::orderBy('lname')->orderBy('fname')->get();
-        return view('accounts.index', compact('users'));
+        $users = User::orderBy('lname')->orderBy('fname')
+            ->paginate(PerPage::resolve($request, 25))
+            ->withQueryString();
+
+        $roleCounts = User::query()
+            ->selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        return view('accounts.index', compact('users', 'roleCounts'));
     }
 
     public function edit($id)

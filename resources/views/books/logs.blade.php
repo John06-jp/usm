@@ -363,7 +363,7 @@
         </div>
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-top">
-            {{ $logs->withQueryString()->links('pagination::bootstrap-5') }}
+            @include('layouts.partials.pagination_bar', ['paginator' => $logs])
             <a href="{{ route('transactions.export') }}" class="btn btn-outline-secondary btn-sm">Download report</a>
         </div>
                 </section>

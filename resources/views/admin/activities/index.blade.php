@@ -61,8 +61,8 @@
         </div>
     </div>
 
-    <div class="mt-3">
-        {{ $activities->links('pagination::bootstrap-5') }}
     </div>
+
+    @include('layouts.partials.pagination_bar', ['paginator' => $activities])
 </div>
 @endsection

@@ -7,11 +7,8 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <link href="{{ asset('vendor/fontsource/figtree/latin-400.css') }}" rel="stylesheet" />
-        <link href="{{ asset('vendor/fontsource/figtree/latin-500.css') }}" rel="stylesheet" />
-        <link href="{{ asset('vendor/fontsource/figtree/latin-600.css') }}" rel="stylesheet" />
         <link rel="stylesheet" href="{{ asset(config('branding.css_path')) }}">
-        <style>body { font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif; }</style>
+        <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
 
         <!-- Shared-hosting friendly: avoid Vite build dependency -->
         <script src="https://cdn.tailwindcss.com"></script>

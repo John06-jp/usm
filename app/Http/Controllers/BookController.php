@@ -14,6 +14,7 @@ use App\Models\CatalogFramework;
 use App\Models\Setting;
 use App\Services\BookMarcDisplay;
 use App\Services\AdminActivityLogger;
+use App\Support\PerPage;
 use App\Support\PublicStoragePublisher;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
@@ -354,7 +355,8 @@ class BookController extends Controller
             || in_array($statusFilter, ['Available', 'Borrowed'], true);
 
         if (! $hasActiveQuery) {
-            $books = new LengthAwarePaginator([], 0, 10, 1, [
+            $perPage = PerPage::resolve($request, 10);
+            $books = new LengthAwarePaginator([], 0, $perPage, 1, [
                 'path' => $request->url(),
                 'query' => $request->query(),
             ]);
@@ -415,7 +417,7 @@ class BookController extends Controller
             )
             ->groupBy('main_author', 'title_statement', 'pub_year', 'content_type')
             ->orderBy('title_statement')
-            ->paginate(10)
+            ->paginate(PerPage::resolve($request, 10))
             ->withQueryString();
 
         $singleCopyIds = collect($books->items())
@@ -464,6 +466,7 @@ class BookController extends Controller
             'year1' => $request->input('year1', ''),
             'year2' => $request->input('year2', ''),
             'status' => $request->input('status', ''),
+            'per_page' => (string) PerPage::resolve($request, 10),
         ];
     }
     
@@ -484,7 +487,7 @@ class BookController extends Controller
             ->where('main_author', $author)
             ->where('pub_year', $year)
             ->orderBy('accession_no', 'asc')
-            ->paginate(10)
+            ->paginate(PerPage::resolve($request, 10))
             ->withQueryString(); // Keep URL parameters when switching pages
     
         return view('books.copies', compact('copies', 'title', 'author', 'year'));
@@ -641,7 +644,7 @@ class BookController extends Controller
             ->where('main_author', $author)
             ->where('pub_year', $year)
             ->orderBy('accession_no', 'asc')
-            ->paginate(10)
+            ->paginate(PerPage::resolve($request, 10))
             ->withQueryString();
 
         return view('books.copies_staff', compact('copies', 'title', 'author', 'year'));
@@ -708,6 +711,7 @@ class BookController extends Controller
         }
 
         $ebooks = null;
+        $perPage = PerPage::resolve($request, 20);
 
         if ($viewMode === 'ebooks') {
             $q = Ebook::query();
@@ -723,10 +727,9 @@ class BookController extends Controller
                 });
             }
 
-            $ebooks = $q->orderBy('title')->paginate(20)->withQueryString();
+            $ebooks = $q->orderBy('title')->paginate($perPage)->withQueryString();
 
             // Keep `$books` as empty paginator to avoid blade errors on counts.
-            $perPage = 20;
             $currentPage = max(1, (int) $request->input('page', 1));
             $books = new LengthAwarePaginator([], 0, $perPage, $currentPage, [
                 'path' => $request->url(),
@@ -734,7 +737,6 @@ class BookController extends Controller
             ]);
             $books->withQueryString();
         } elseif (! $searchActive) {
-            $perPage = 20;
             $currentPage = max(1, (int) $request->input('page', 1));
             $books = new LengthAwarePaginator([], 0, $perPage, $currentPage, [
                 'path' => $request->url(),
@@ -807,7 +809,7 @@ class BookController extends Controller
                     'books.course'
                 )
                 ->orderBy('grouped.title_statement')
-                ->paginate(20)
+                ->paginate($perPage)
                 ->withQueryString();
         }
     
@@ -928,7 +930,7 @@ class BookController extends Controller
         $books = Book::query()
             ->whereNotNull('archived_at')
             ->orderByDesc('archived_at')
-            ->paginate(20)
+            ->paginate(PerPage::resolve($request, 20))
             ->withQueryString();
 
         return view('books.archived', compact('books'));
@@ -938,7 +940,7 @@ class BookController extends Controller
     {
         $books = Book::onlyTrashed()
             ->orderByDesc('deleted_at')
-            ->paginate(20)
+            ->paginate(PerPage::resolve($request, 20))
             ->withQueryString();
 
         return view('books.trash', compact('books'));

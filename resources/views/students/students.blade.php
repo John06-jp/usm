@@ -1,178 +1,143 @@
 @extends('layouts.sec')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/students/students.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/patrons/directory.css') }}">
 @endsection
 
 @section('content')
-<!-- ✅ JavaScript Toggle Functions -->
-<script>
-    const toggleBtn = document.getElementById('customMenuToggle');
-    const closeBtn = document.getElementById('customMenuClose');
-    const routeWrapper = document.getElementById('routeWrapper');
-
-    toggleBtn.addEventListener('click', () => {
-        routeWrapper.classList.add('open');
-    });
-
-    closeBtn.addEventListener('click', () => {
-        routeWrapper.classList.remove('open');
-    });
-
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768) {
-            routeWrapper.classList.remove('open');
-        }
-    });
-</script>
-
-    <div class="container mt-5">
-        <div class="card">
-            <div id="rs" class="card-header text-center">
-                <h4>Registered Students</h4>
-            </div>
-            <div class="card-body">
-
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-
-                <div class="mb-3">
-                    <!-- Search Form -->
-                    <form action="{{ route('students.index') }}" method="GET" class="row g-2 mb-3">
-                        <!-- 🔍 Search -->
-                        <div class="col-md-4">
-                            <input type="text" name="search" class="form-control form-control-sm"
-                                   placeholder="Search patrons..."
-                                   value="{{ request('search') }}">
-                        </div>
-                        <!-- 🎓 Program / Course (Loaded from programs table) -->
-                        <div class="col-md-4">
-                            <select name="program_id" class="form-select form-select-sm">
-                                <option value="">All Courses</option>
-                    
-                                @foreach ($programs as $program)
-                                    <option value="{{ $program->program_code }}"
-                                        {{ request('program_id') == $program->program_code ? 'selected' : '' }}>
-                                        {{ $program->program_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    
-                        <!-- 📚 Year Filter -->
-                        <div class="col-md-3">
-                            <select name="year" class="form-select form-select-sm">
-                                <option value="">All Years</option>
-                                <option value="1st Year" {{ request('year') == '1st Year' ? 'selected' : '' }}>1st Year</option>
-                                <option value="2nd Year" {{ request('year') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
-                                <option value="3rd Year" {{ request('year') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
-                                <option value="4th Year" {{ request('year') == '4th Year' ? 'selected' : '' }}>4th Year</option>
-                                <option value="5th Year" {{ request('year') == '5th Year' ? 'selected' : '' }}>5th Year</option>
-                                <option value="6th Year" {{ request('year') == '6th Year' ? 'selected' : '' }}>6th Year</option>
-                            </select>
-                        </div>
-                    
-                        <!-- 🔎 Apply Button -->
-                        <div class="col-md-1">
-                            <button type="submit" id="fil" class="btn btn-primary btn-sm w-100">Filter</button>
-                        </div>
-                    </form>
-                    
-                    <!-- Register + Pending -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                        <a href="{{ route('students.create') }}" id="fil" class="btn btn-add">+ Register Patron</a>
-                        <a href="{{ route('pending.index') }}" id="fil" class="btn btn-warning">View Pending Registrations</a>
-                        <a href="{{ route('students.pending.requests') }}" id="fil" class="btn btn-warning btn-sm">Patron edit requests</a>
-                        <a href="{{ route('students.export') }}" id="fil" class="btn btn-success btn-sm">Export CSV</a>
-                        <form action="{{ route('students.import') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
-                            @csrf
-                            <input type="file" name="file" class="form-control form-control-sm" style="max-width: 220px;" accept=".xlsx,.csv" required>
-                            <button type="submit" id="fil" class="btn btn-primary btn-sm">Import</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="mb-3 text-center">
-                    <a href="{{ route('students.index') }}" id="rs" class="btn btn-outline-primary btn-sm active">Students</a>
-                    <a href="{{ route('employees.index') }}" class="btn btn-outline-primary btn-sm">Faculty &amp; Staff</a>
-                </div>
-
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-center align-middle">
-                        <thead>
-                            <tr>
-                                <th>Profile</th>
-                                <th>Last Name</th>
-                                <th>First Name</th>
-                                <th>Course</th>
-                                <th>Year</th>
-                                <th>Actions</th>
-                                <th>Generate ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($students as $student)
-                                <tr>
-                                    <td>
-                                        @if($student->profile_picture)
-                                            <img src="{{ asset($student->profile_picture) }}" alt="Profile" class="profile-img">
-                                        @else
-                                            <span>No Image</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $student->lastname }}</td>
-                                    <td>{{ $student->firstname }}</td>
-                                    <td>{{ $student->course }}</td>
-                                    <td>{{ $student->year }}</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                Options
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="{{ route('students.edit', $student->id) }}">Edit</a></li>
-                                                <li>
-                                                    <form action="{{ route('students.destroy', $student->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button class="dropdown-item" type="submit">Delete</button>
-                                                    </form>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                Generate
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="{{ url('idcard/front/' . $student->id) }}" target="_blank">Front</a></li>
-                                                <li ><a class="dropdown-item" href="{{ url('idcard/back/' . $student->id) }}" target="_blank">Back</a></li>
-                                                <li ><a class="dropdown-item" href="{{ url('idcard/download/' . $student->id) }}">Download ZIP</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7">No students found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $students->withQueryString()->links('pagination::bootstrap-5') }}
-                </div>
-
-                <a href="{{ route('book.index') }}" id="fil" class="btn btn-back mt-3">← Back to Books</a>
-
-            </div>
+<div class="patron-dir">
+    <header class="patron-dir__hero">
+        <div>
+            <p class="patron-dir__eyebrow">Patron data</p>
+            <h1 class="patron-dir__title">Students</h1>
+            <p class="patron-dir__subtitle">Search, register, and manage student patron records.</p>
         </div>
+        <div class="patron-dir__hero-actions">
+            <a href="{{ route('students.create') }}" class="patron-dir__btn patron-dir__btn--primary">+ Register student</a>
+            <a href="{{ route('book.index') }}" class="patron-dir__btn patron-dir__btn--outline">← Catalog</a>
+        </div>
+    </header>
+
+    @include('patrons.partials.type_tabs', ['active' => 'students'])
+
+    @include('patrons.partials.quick_actions_student')
+
+    @if(session('success'))
+        <div class="alert alert-success patron-dir__alert">{{ session('success') }}</div>
+    @endif
+
+    <div class="patron-dir__toolbar">
+        <form action="{{ route('students.index') }}" method="GET" class="patron-dir__filters">
+            <div class="patron-dir__field">
+                <label for="student_search">Search</label>
+                <input type="text" name="search" id="student_search" class="form-control"
+                       placeholder="Name, ID, course, QR…" value="{{ request('search') }}">
+            </div>
+            <div class="patron-dir__field">
+                <label for="student_program">Program</label>
+                <select name="program_id" id="student_program" class="form-select">
+                    <option value="">All programs</option>
+                    @foreach ($programs as $program)
+                        <option value="{{ $program->program_code }}" @selected(request('program_id') == $program->program_code)>
+                            {{ $program->program_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="patron-dir__field">
+                <label for="student_year">Year level</label>
+                <select name="year" id="student_year" class="form-select">
+                    <option value="">All years</option>
+                    @foreach (['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'] as $yr)
+                        <option value="{{ $yr }}" @selected(request('year') == $yr)>{{ $yr }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="patron-dir__filter-btn">
+                <button type="submit" class="patron-dir__btn patron-dir__btn--outline">Apply</button>
+            </div>
+        </form>
     </div>
-    
-    
+
+    <details class="patron-dir__import">
+        <summary>Import students from spreadsheet</summary>
+        <div class="patron-dir__import-body">
+            <form action="{{ route('students.import') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-2 mb-0">
+                @csrf
+                <input type="file" name="file" class="form-control form-control-sm" accept=".xlsx,.csv" required>
+                <button type="submit" class="patron-dir__btn patron-dir__btn--outline">Upload</button>
+            </form>
+        </div>
+    </details>
+
+    <div class="patron-dir__meta">
+        <span class="patron-dir__meta-item"><strong>{{ number_format($students->total()) }}</strong> registered</span>
+        @if(request()->hasAny(['search', 'program_id', 'year', 'per_page']))
+            <span class="patron-dir__meta-item">
+                <a href="{{ route('students.index') }}" class="text-decoration-none">Clear filters</a>
+            </span>
+        @endif
+    </div>
+
+    <div class="patron-dir__card">
+        @if($students->total() > 0)
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Program</th>
+                            <th>Year</th>
+                            <th class="text-end" style="width: 3rem;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($students as $student)
+                            @php
+                                $programLabel = $programs->firstWhere('program_code', $student->course)?->program_name
+                                    ?? $student->course;
+                            @endphp
+                            <tr>
+                                <td>
+                                    <div class="patron-dir__person">
+                                        @if($student->profile_picture)
+                                            <img src="{{ asset($student->profile_picture) }}" alt="" class="patron-dir__avatar">
+                                        @else
+                                            <span class="patron-dir__avatar patron-dir__avatar--empty">N/A</span>
+                                        @endif
+                                        <div>
+                                            <div class="patron-dir__person-name">
+                                                {{ $student->lastname }}, {{ $student->firstname }}
+                                            </div>
+                                            <div class="patron-dir__person-meta">
+                                                @if($student->id_number)
+                                                    ID {{ $student->id_number }}
+                                                @endif
+                                                @if($student->qrcode)
+                                                    · <span class="patron-dir__code">{{ $student->qrcode }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="patron-dir__chip">{{ $programLabel ?: '—' }}</span></td>
+                                <td><span class="patron-dir__chip patron-dir__chip--muted">{{ $student->year ?: '—' }}</span></td>
+                                <td class="text-end">
+                                    @include('patrons.partials.row_menu_student', ['student' => $student])
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @include('layouts.partials.pagination_bar', ['paginator' => $students])
+        @else
+            <div class="patron-dir__empty">
+                <div class="patron-dir__empty-icon">🎓</div>
+                <p class="mb-2">No students match your filters.</p>
+                <a href="{{ route('students.create') }}" class="patron-dir__btn patron-dir__btn--primary">Register first student</a>
+            </div>
+        @endif
+    </div>
+</div>
 @endsection

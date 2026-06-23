@@ -1,170 +1,223 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Pending Registrations</title>
-    <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/students/students.css') }}">
-    <style>
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-<div class="container py-4">
-    <h3>Pending Registrations</h3>
+@extends('layouts.sec')
 
-    @if(session('success')) 
-        <div class="alert alert-success">{{ session('success') }}</div> 
-    @endif
-    @if(session('error')) 
-        <div class="alert alert-danger">{{ session('error') }}</div> 
-    @endif
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/patrons/directory.css') }}">
+@endsection
 
-    <!-- Toggle Buttons -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+@section('content')
+@php
+    $studentCount = $pendingStudents->count();
+    $employeeCount = $pendingEmployees->count();
+    $activeTab = $defaultTab ?? 'students';
+@endphp
+<div class="patron-dir">
+    <header class="patron-dir__hero">
         <div>
-            <button id="showStudents" class="btn btn-primary me-2">View Students</button>
-            <button id="showEmployees" class="btn btn-outline-primary">View Employees</button>
+            <p class="patron-dir__eyebrow">Patron data · review queue</p>
+            <h1 class="patron-dir__title">Pending registrations</h1>
+            <p class="patron-dir__subtitle">Approve or reject self-service sign-ups before they appear in the directory.</p>
         </div>
-        <a href="{{ $backRoute ?? route('students.index') }}" class="btn btn-secondary">
-            ← Back to Registered
-        </a>
+        <div class="patron-dir__hero-actions">
+            <a href="{{ $backRoute ?? route('students.index') }}" class="patron-dir__btn patron-dir__btn--outline">← Back to directory</a>
+        </div>
+    </header>
+
+    @if(session('success'))
+        <div class="alert alert-success patron-dir__alert">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger patron-dir__alert">{{ session('error') }}</div>
+    @endif
+
+    <div class="patron-dir__stats">
+        <div class="patron-dir__stat-card {{ $studentCount > 0 ? 'patron-dir__stat-card--alert' : '' }}">
+            <div class="patron-dir__stat-card__value">{{ $studentCount }}</div>
+            <div class="patron-dir__stat-card__label">Students waiting</div>
+        </div>
+        <div class="patron-dir__stat-card {{ $employeeCount > 0 ? 'patron-dir__stat-card--alert' : '' }}">
+            <div class="patron-dir__stat-card__value">{{ $employeeCount }}</div>
+            <div class="patron-dir__stat-card__label">Faculty &amp; staff waiting</div>
+        </div>
     </div>
 
-    <!-- 🧑‍🎓 Pending Students Table -->
-    <div id="studentTable">
-        <h4>Pending Student Registrations</h4>
-        <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Profile</th>
-                    <th>Name</th>
-                    <th>Course</th>
-                    <th>Year</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($pendingStudents as $p)
-                    <tr>
-                        <td>
-                            @if($p->profile_picture)
-                                <img src="{{ asset($p->profile_picture) }}" width="80">
-                            @else
-                                No Image
-                            @endif
-                        </td>
-                        <td>{{ $p->firstname }} {{ $p->lastname }}</td>
-                        <td>{{ $p->course }}</td>
-                        <td>{{ $p->year }}</td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    Actions
-                                </button>
-                                <ul class="dropdown-menu">
-                            
-                                    <li>
-                                        <form action="{{ route('students.approve', $p->id) }}" method="POST">
-                                            @csrf
-                                            <button class="dropdown-item">Approve</button>
-                                        </form>
-                                    </li>
-                            
-                                    <li>
-                                        <form action="{{ route('students.reject', $p->id) }}" method="POST">
-                                            @csrf
-                                            <button class="dropdown-item">Reject</button>
-                                        </form>
-                                    </li>
-                            
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="6">No pending student registrations</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+    <nav class="patron-dir__tabs" aria-label="Pending registration type" role="tablist">
+        <button type="button"
+                id="pending-tab-students"
+                class="patron-dir__tab {{ $activeTab === 'students' ? 'active' : '' }}"
+                role="tab"
+                aria-selected="{{ $activeTab === 'students' ? 'true' : 'false' }}"
+                aria-controls="pending-panel-students"
+                data-pending-tab="students">
+            Students
+            @if($studentCount > 0)
+                <span class="patron-dir__quick-action-count">{{ $studentCount }}</span>
+            @endif
+        </button>
+        <button type="button"
+                id="pending-tab-employees"
+                class="patron-dir__tab {{ $activeTab === 'employees' ? 'active' : '' }}"
+                role="tab"
+                aria-selected="{{ $activeTab === 'employees' ? 'true' : 'false' }}"
+                aria-controls="pending-panel-employees"
+                data-pending-tab="employees">
+            Faculty &amp; staff
+            @if($employeeCount > 0)
+                <span class="patron-dir__quick-action-count">{{ $employeeCount }}</span>
+            @endif
+        </button>
+    </nav>
+
+    <div id="pending-panel-students"
+         class="patron-dir__pending-panel {{ $activeTab === 'students' ? 'is-active' : '' }}"
+         role="tabpanel"
+         aria-labelledby="pending-tab-students">
+        <div class="patron-dir__card">
+            @if($studentCount > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Program</th>
+                                <th>Year</th>
+                                <th>Submitted</th>
+                                <th class="text-end">Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pendingStudents as $p)
+                                @php
+                                    $programLabel = $programs->firstWhere('program_code', $p->course)?->program_name ?? $p->course;
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="patron-dir__person">
+                                            @if($p->profile_picture)
+                                                <img src="{{ asset($p->profile_picture) }}" alt="" class="patron-dir__avatar">
+                                            @else
+                                                <span class="patron-dir__avatar patron-dir__avatar--empty">N/A</span>
+                                            @endif
+                                            <div>
+                                                <div class="patron-dir__person-name">{{ $p->lastname }}, {{ $p->firstname }}</div>
+                                                <div class="patron-dir__person-meta">
+                                                    @if($p->id_number) ID {{ $p->id_number }} @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="patron-dir__chip">{{ $programLabel ?: '—' }}</span></td>
+                                    <td><span class="patron-dir__chip patron-dir__chip--muted">{{ $p->year ?: '—' }}</span></td>
+                                    <td class="text-muted small">{{ $p->created_at?->timezone('Asia/Manila')->diffForHumans() }}</td>
+                                    <td class="text-end">
+                                        @include('patrons.partials.pending_decision_buttons', [
+                                            'approveRoute' => route('students.approve', $p->id),
+                                            'rejectRoute' => route('students.reject', $p->id),
+                                        ])
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="patron-dir__empty">
+                    <div class="patron-dir__empty-icon">✓</div>
+                    <p class="mb-0">No pending student registrations.</p>
+                </div>
+            @endif
+        </div>
     </div>
 
-    <!-- 🧑‍💼 Pending Employees Table -->
-    <div id="employeeTable" class="hidden">
-        <h4>Pending Faculty &amp; Staff Registrations</h4>
-        <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Profile</th>
-                    <th>Name</th>
-                    <th>ID</th>
-                    <th>Designation</th>
-                    <th>Program</th>
-                    <th>Start year</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($pendingEmployees as $e)
-                    <tr>
-                        <td>
-                            @if($e->formal_picture)
-                                <img src="{{ asset($e->formal_picture) }}" width="80">
-                            @else
-                                No Image
-                            @endif
-                        </td>
-                        <td>{{ $e->firstname }} {{ $e->middle_initial ? $e->middle_initial.'. ' : '' }}{{ $e->lastname }}</td>
-                        <td>{{ $e->employee_id }}</td>
-                        <td>{{ $e->designation ?? $e->position }}</td>
-                        <td>{{ $e->program ?? $e->department }}</td>
-                        <td>{{ $e->year_start_work ?? '—' }}</td>
-                        <td>
-                            <form action="{{ route('employees.approve', $e->id) }}" method="POST" style="display:inline">
-                                @csrf
-                                <button class="btn btn-success btn-sm">Approve</button>
-                            </form>
-                            <form action="{{ route('employees.reject', $e->id) }}" method="POST" style="display:inline">
-                                @csrf
-                                <button class="btn btn-danger btn-sm">Reject</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="7">No pending faculty &amp; staff registrations</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div id="pending-panel-employees"
+         class="patron-dir__pending-panel {{ $activeTab === 'employees' ? 'is-active' : '' }}"
+         role="tabpanel"
+         aria-labelledby="pending-tab-employees">
+        <div class="patron-dir__card">
+            @if($employeeCount > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Designation</th>
+                                <th>Program</th>
+                                <th>Start year</th>
+                                <th>Submitted</th>
+                                <th class="text-end">Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pendingEmployees as $e)
+                                @php
+                                    $programLabel = $programs->firstWhere('program_code', $e->program)?->program_name
+                                        ?? $e->program
+                                        ?? $e->department;
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="patron-dir__person">
+                                            @if($e->formal_picture)
+                                                <img src="{{ asset($e->formal_picture) }}" alt="" class="patron-dir__avatar">
+                                            @else
+                                                <span class="patron-dir__avatar patron-dir__avatar--empty">N/A</span>
+                                            @endif
+                                            <div>
+                                                <div class="patron-dir__person-name">
+                                                    {{ $e->lastname }}, {{ $e->firstname }}
+                                                    @if($e->middle_initial) {{ $e->middle_initial }}. @endif
+                                                </div>
+                                                <div class="patron-dir__person-meta">{{ $e->employee_id }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ $e->designation ?? $e->position ?? '—' }}</td>
+                                    <td><span class="patron-dir__chip">{{ $programLabel ?: '—' }}</span></td>
+                                    <td><span class="patron-dir__chip patron-dir__chip--muted">{{ $e->year_start_work ?? '—' }}</span></td>
+                                    <td class="text-muted small">{{ $e->created_at?->timezone('Asia/Manila')->diffForHumans() }}</td>
+                                    <td class="text-end">
+                                        @include('patrons.partials.pending_decision_buttons', [
+                                            'approveRoute' => route('employees.approve', $e->id),
+                                            'rejectRoute' => route('employees.reject', $e->id),
+                                        ])
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="patron-dir__empty">
+                    <div class="patron-dir__empty-icon">✓</div>
+                    <p class="mb-0">No pending faculty &amp; staff registrations.</p>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 
-<!-- Simple Toggle Script -->
 <script>
-    const studentTable = document.getElementById('studentTable');
-    const employeeTable = document.getElementById('employeeTable');
-    const btnStudents = document.getElementById('showStudents');
-    const btnEmployees = document.getElementById('showEmployees');
-    const defaultTab = @json($defaultTab ?? 'students');
+    (function () {
+        const tabs = document.querySelectorAll('[data-pending-tab]');
+        const panels = {
+            students: document.getElementById('pending-panel-students'),
+            employees: document.getElementById('pending-panel-employees'),
+        };
 
-    btnStudents.addEventListener('click', () => {
-        studentTable.classList.remove('hidden');
-        employeeTable.classList.add('hidden');
-        btnStudents.classList.replace('btn-outline-primary', 'btn-primary');
-        btnEmployees.classList.replace('btn-primary', 'btn-outline-primary');
-    });
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+                const key = tab.getAttribute('data-pending-tab');
 
-    btnEmployees.addEventListener('click', () => {
-        employeeTable.classList.remove('hidden');
-        studentTable.classList.add('hidden');
-        btnEmployees.classList.replace('btn-outline-primary', 'btn-primary');
-        btnStudents.classList.replace('btn-primary', 'btn-outline-primary');
-    });
+                tabs.forEach((t) => {
+                    const active = t === tab;
+                    t.classList.toggle('active', active);
+                    t.setAttribute('aria-selected', active ? 'true' : 'false');
+                });
 
-    if (defaultTab === 'employees') {
-        btnEmployees.click();
-    }
+                Object.entries(panels).forEach(([name, panel]) => {
+                    panel?.classList.toggle('is-active', name === key);
+                });
+            });
+        });
+    })();
 </script>
-
-<script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-</body>
-</html>
+@endsection

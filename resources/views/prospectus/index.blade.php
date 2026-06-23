@@ -1,225 +1,177 @@
 @extends('layouts.sec')
 
+@section('title', 'Prospectus Manager')
+
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/prospectus/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/patrons/directory.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/prospectus/page.css') }}">
 @endsection
 
 @section('content')
-
-    <div id="prospectus-page" class="max-w-6xl mx-auto px-4 py-8">
-        <h1 class="text-2xl font-bold mb-6">Prospectus Manager</h1>
-
-        {{-- Flash messages --}}
-        @if(session('success'))
-        <div class="p-3 mb-4 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
-        @endif
-
-        {{-- Add Program --}}
-        <div class="bg-white rounded shadow p-4 mb-6">
-            <h2 class="font-semibold mb-3">Add Program/Strand</h2>
-            <form method="POST" action="{{ route('prospectus.storeProgram') }}"
-                class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                @csrf
-                <input type="text" name="program_code" placeholder="Program Code" class="border px-3 py-2" required>
-                <input type="text" name="program_name" placeholder="Program Name" class="border px-3 py-2 md:col-span-2"
-                    required>
-                <div class="flex gap-2">
-                    <input type="number" name="total_years" placeholder="Years" min="1" max="6"
-                        class="border px-3 py-2 w-20" required>
-                    <button type="submit" class="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded">Add</button>
-                </div>
-            </form>
+@php
+    $yearLabels = [1 => '1st Year', 2 => '2nd Year', 3 => '3rd Year', 4 => '4th Year', 5 => '5th Year', 6 => '6th Year'];
+@endphp
+<div id="prospectus-page" class="prog-mgr">
+    <header class="prog-mgr__hero">
+        <div>
+            <p class="prog-mgr__eyebrow">Admin · curriculum</p>
+            <h1 class="prog-mgr__title">Prospectus manager</h1>
+            <p class="prog-mgr__subtitle">
+                Maintain programs, year levels, and courses used for patron records, ebooks, and catalog linking.
+            </p>
         </div>
+        <div class="prog-mgr__hero-actions">
+            <a href="{{ route('book.index') }}" class="prog-mgr__btn prog-mgr__btn--outline">← Catalog</a>
+        </div>
+    </header>
 
-        {{-- Programs List --}}
-        @foreach($programs as $program)
-        <div class="bg-white rounded shadow mb-6">
-            <div class="flex justify-between items-center px-4 py-3 bg-gray-800 text-white rounded-t">
-                <span id="program-name-{{ $program->id }}" class="font-semibold">
-                    {{ $program->program_code }} — {{ $program->program_name }}
-                </span>
-                <div class="flex gap-2">
-                    <button type="button"
-                        onclick="openProgramEditModal({{ $program->id }}, '{{ $program->program_code }}', '{{ $program->program_name }}')"
-                        class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">
-                        Edit Program
-                    </button>
-                    <button type="button"
-                        onclick="openProgramDeleteModal({{ $program->id }}, '{{ $program->program_code }}')"
-                        class="bg-red-600 text-white px-2 py-1 rounded text-sm">
-                        Delete
-                    </button>
-                    <button type="button" data-prospectus-panel="#program-{{ $program->id }}"
-                        class="bg-gray-600 px-2 py-1 rounded text-sm">
-                        Toggle
-                    </button>
-                </div>
+    @if(session('success'))
+        <div class="alert alert-success prog-mgr__alert">{{ session('success') }}</div>
+    @endif
+
+    <div class="prog-mgr__stats" aria-label="Prospectus summary">
+        <div class="prog-mgr__stat">
+            <span class="prog-mgr__stat-label">Programs</span>
+            <span class="prog-mgr__stat-value">{{ number_format($stats['programs']) }}</span>
+        </div>
+        <div class="prog-mgr__stat">
+            <span class="prog-mgr__stat-label">Courses</span>
+            <span class="prog-mgr__stat-value">{{ number_format($stats['courses']) }}</span>
+        </div>
+        <div class="prog-mgr__stat">
+            <span class="prog-mgr__stat-label">Showing</span>
+            <span class="prog-mgr__stat-value">{{ number_format($programs->count()) }}</span>
+        </div>
+    </div>
+
+    <div class="prog-mgr__card">
+        <h2 class="prog-mgr__card-title">Add program or strand</h2>
+        <form method="POST" action="{{ route('prospectus.storeProgram') }}" class="prog-mgr__add-form">
+            @csrf
+            <div class="prog-mgr__field">
+                <label for="program_code">Code</label>
+                <input type="text" name="program_code" id="program_code" class="form-control"
+                       placeholder="e.g. BSIT" value="{{ old('program_code') }}" required maxlength="50">
             </div>
+            <div class="prog-mgr__field">
+                <label for="program_name">Program name</label>
+                <input type="text" name="program_name" id="program_name" class="form-control"
+                       placeholder="Bachelor of Science in Information Technology" value="{{ old('program_name') }}" required maxlength="255">
+            </div>
+            <div class="prog-mgr__field">
+                <label for="total_years">Years</label>
+                <input type="number" name="total_years" id="total_years" class="form-control"
+                       min="1" max="6" value="{{ old('total_years', 4) }}" required>
+            </div>
+            <div class="prog-mgr__field">
+                <label>&nbsp;</label>
+                <button type="submit" class="prog-mgr__btn prog-mgr__btn--primary w-100">Add program</button>
+            </div>
+        </form>
+    </div>
 
+    <div class="prog-mgr__card">
+        <h2 class="prog-mgr__card-title">Search programs &amp; courses</h2>
+        <form method="GET" action="{{ route('prospectus.index') }}" class="prog-mgr__search-form">
+            <input type="text" name="search" class="form-control" placeholder="Program code, name, or course…"
+                   value="{{ $search }}">
+            <button type="submit" class="prog-mgr__btn prog-mgr__btn--primary">Search</button>
+            @if($search)
+                <a href="{{ route('prospectus.index') }}" class="prog-mgr__btn prog-mgr__btn--outline">Clear</a>
+            @endif
+        </form>
+    </div>
 
-            <div id="program-{{ $program->id }}" class="p-4 hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @foreach($program->years as $year)
-                    <div class="bg-gray-50 rounded shadow">
-                        <div class="flex justify-between items-center px-3 py-2 border-b">
-                            <span class="font-semibold">Year {{ $year->year_level }}</span>
-                            <button type="button" data-prospectus-panel="#year-{{ $year->id }}"
-                                class="text-sm text-gray-600">
-                                Toggle
+    @if($programs->isEmpty())
+        <div class="prog-mgr__empty">
+            @if($search)
+                <p class="mb-2">No programs or courses match your search.</p>
+                <a href="{{ route('prospectus.index') }}" class="prog-mgr__btn prog-mgr__btn--outline">Clear search</a>
+            @else
+                <p class="mb-0">No programs yet. Add your first program above.</p>
+            @endif
+        </div>
+    @else
+        <div class="prog-mgr__programs">
+            @foreach($programs as $program)
+                @php
+                    $courseCount = $program->years->sum(fn ($year) => $year->courses->count());
+                @endphp
+                <article id="program-card-{{ $program->id }}" class="prog-mgr__program {{ $loop->first ? 'is-expanded' : '' }}">
+                    <div class="prog-mgr__program-header">
+                        <div class="prog-mgr__program-info">
+                            <span class="prog-mgr__program-code" id="program-code-{{ $program->id }}">{{ $program->program_code }}</span>
+                            <h3 class="prog-mgr__program-name" id="program-name-{{ $program->id }}">{{ $program->program_name }}</h3>
+                            <p class="prog-mgr__program-meta">
+                                {{ $program->total_years }} {{ Str::plural('year', $program->total_years) }}
+                                · {{ $courseCount }} {{ Str::plural('course', $courseCount) }}
+                            </p>
+                        </div>
+                        <div class="prog-mgr__program-actions">
+                            <button type="button" class="prog-mgr__btn prog-mgr__btn--outline prog-mgr__btn--sm"
+                                    data-action="toggle-program" data-program-id="{{ $program->id }}">
+                                <span data-toggle-label>Expand</span>
+                            </button>
+                            <button type="button" class="prog-mgr__btn prog-mgr__btn--outline prog-mgr__btn--sm"
+                                    data-action="edit-program"
+                                    data-program-id="{{ $program->id }}"
+                                    data-program-code="{{ $program->program_code }}"
+                                    data-program-name="{{ $program->program_name }}">
+                                Edit
+                            </button>
+                            <button type="button" class="prog-mgr__btn prog-mgr__btn--danger prog-mgr__btn--sm"
+                                    data-action="delete-program"
+                                    data-program-id="{{ $program->id }}"
+                                    data-program-code="{{ $program->program_code }}">
+                                Delete
                             </button>
                         </div>
-                        {{-- Courses --}}
-                        <div id="year-{{ $year->id }}" class="p-3 hidden">
-                            <ul class="space-y-2 mb-3 max-h-52 overflow-y-auto">
-                                @forelse($year->courses as $course)
-                                <li id="course-{{ $course->id }}"
-                                    class="flex justify-between items-center border-b pb-1">
-                                    <span><strong>{{ $course->course_code }}</strong> — {{ $course->course_name
-                                        }}</span>
-                                    <div class="flex gap-2">
-                                        <!-- Edit Button -->
-                                        <button type="button" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
-                                            onclick="openEditModal({{ $course->id }}, '{{ $course->course_code }}', '{{ $course->course_name }}')">
-                                            Edit
-                                        </button>
-                                        <!-- Delete Button (triggers modal) -->
-                                        <button type="button" class="bg-red-600 text-white px-2 py-1 rounded text-xs"
-                                            onclick="openDeleteModal({{ $course->id }}, '{{ $course->course_code }}')">
-                                            Delete
-                                        </button>
+                    </div>
 
+                    <div id="program-body-{{ $program->id }}" class="prog-mgr__program-body">
+                        <div class="prog-mgr__years">
+                            @foreach($program->years as $year)
+                                <section class="prog-mgr__year" id="year-block-{{ $year->id }}">
+                                    <div class="prog-mgr__year-header">
+                                        <h4 class="prog-mgr__year-title">
+                                            {{ $yearLabels[$year->year_level] ?? 'Year ' . $year->year_level }}
+                                        </h4>
+                                        <span class="prog-mgr__year-count">{{ $year->courses->count() }} courses</span>
                                     </div>
-                                </li>
-                                @empty
-                                <li class="text-gray-500">No courses yet.</li>
-                                @endforelse
-                            </ul>
 
-                            {{-- Add Course --}}
-                            <form method="POST" action="{{ route('prospectus.storeCourse', $year->id) }}"
-                                class="add-course-form grid grid-cols-1 md:grid-cols-3 gap-2"
-                                data-year="{{ $year->id }}">
-                                @csrf
-                                <input type="text" name="course_code" placeholder="Course Code" class="border px-2 py-1"
-                                    required>
-                                <input type="text" name="course_name" placeholder="Course Name"
-                                    class="border px-2 py-1 md:col-span-1" required>
-                                <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded">
-                                    <span class="btn-text">Add</span>
-                                    <span
-                                        class="spinner hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                </button>
-                            </form>
+                                    <ul id="year-{{ $year->id }}" class="prog-mgr__course-list" data-year-id="{{ $year->id }}">
+                                        @forelse($year->courses as $course)
+                                            @include('prospectus.partials.course_item', ['course' => $course])
+                                        @empty
+                                            <li class="prog-mgr__course-empty" data-empty-row>No courses yet.</li>
+                                        @endforelse
+                                    </ul>
 
+                                    <form method="POST" action="{{ route('prospectus.storeCourse', $year->id) }}"
+                                          class="prog-mgr__add-course add-course-form" data-year="{{ $year->id }}">
+                                        @csrf
+                                        <input type="text" name="course_code" class="form-control" placeholder="Course code" required maxlength="50">
+                                        <input type="text" name="course_name" class="form-control" placeholder="Course name" required maxlength="255">
+                                        <button type="submit" class="prog-mgr__btn prog-mgr__btn--primary prog-mgr__btn--sm">
+                                            <span class="prog-mgr__btn-text">Add</span>
+                                            <span class="prog-mgr__spinner" aria-hidden="true"></span>
+                                        </button>
+                                    </form>
+                                </section>
+                            @endforeach
                         </div>
                     </div>
-                    @endforeach
-                </div>
-            </div>
+                </article>
+            @endforeach
         </div>
-        @endforeach
-    </div>
+    @endif
+</div>
 
-    <!-- Delete Modal -->
-    <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-lg font-bold mb-4">Confirm Delete</h2>
-            <p id="deleteMessage" class="mb-4 text-gray-700"></p>
-            <form id="deleteForm" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeDeleteModal()"
-                        class="px-4 py-2 bg-gray-400 rounded text-white">Cancel</button>
-                    <button type="submit" id="deleteBtn"
-                        class="px-4 py-2 bg-red-600 rounded text-white flex items-center gap-2">
-                        <span class="btn-text">Delete</span>
-                        <span
-                            class="spinner hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <!-- Edit Modal -->
-    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-lg font-bold mb-4">Edit Course</h2>
-            <form id="editForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="mb-3">
-                    <label class="block text-sm font-medium">Course Code</label>
-                    <input type="text" id="editCourseCode" name="course_code" class="border px-3 py-2 w-full" required>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium">Course Name</label>
-                    <input type="text" id="editCourseName" name="course_name" class="border px-3 py-2 w-full" required>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeEditModal()"
-                        class="px-4 py-2 bg-gray-400 rounded text-white">Cancel</button>
-                    <button type="submit" id="editBtn"
-                        class="px-4 py-2 bg-yellow-600 rounded text-white flex items-center gap-2">
-                        <span class="btn-text">Update</span>
-                        <span
-                            class="spinner hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+@include('prospectus.partials.modals')
 
-    <!-- Edit Program Modal -->
-    <div id="editProgramModal"
-        class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-lg font-bold mb-4">Edit Program</h2>
-            <form id="editProgramForm" method="POST">
-                @csrf
-                @method('PUT')
-
-                <input type="text" name="program_code" id="editProgramCode" class="w-full border rounded px-3 py-2 mb-3"
-                    placeholder="Program Code" required>
-
-                <input type="text" name="program_name" id="editProgramName" class="w-full border rounded px-3 py-2 mb-3"
-                    placeholder="Program Name" required>
-
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeProgramEditModal()"
-                        class="px-3 py-1 border rounded">Cancel</button>
-                    <button id="editProgramBtn" type="submit"
-                        class="bg-blue-600 text-white px-3 py-1 rounded flex items-center">
-                        <span class="btn-text">Save</span>
-                        <span
-                            class="spinner hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <!-- Delete Program Modal -->
-    <div id="deleteProgramModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-lg font-bold mb-4">Delete Program</h2>
-            <p class="mb-4">Are you sure you want to delete <span id="deleteProgramCode"></span>? This action cannot be undone.</p>
-            <form id="deleteProgramForm" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeProgramDeleteModal()" class="px-3 py-1 border rounded">Cancel</button>
-                    <button id="deleteProgramBtn" type="submit" class="bg-red-600 text-white px-3 py-1 rounded flex items-center">
-                        <span class="btn-text">Delete</span>
-                        <span class="spinner hidden ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <!-- Toast Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
-    <!-- Scripts -->
-    <script src="{{ asset('js/prospectus.js') }}"></script>
-    
-    
+<div id="prog-mgr-toast-container" aria-live="polite" aria-atomic="true"></div>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/prospectus.js') }}"></script>
+@endpush

@@ -12,6 +12,7 @@ use App\Models\StudentEditRequest;
 use App\Models\AdminActivity;
 use App\Services\AdminActivityLogger;
 use App\Support\MiddleInitial;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -67,9 +68,17 @@ class StudentController extends Controller
             $query->where('course', $request->program_id);
         }
     
-        $students = $query->orderBy('lastname', 'asc')->paginate(15)->appends($request->all());
+        $students = $query->orderBy('lastname', 'asc')->paginate(PerPage::resolve($request, 15))->withQueryString();
 
-        return view('students.students', compact('students', 'programs'));
+        $pendingEditsCount = StudentEditRequest::where('status', 'pending')->count();
+        $pendingRegistrationsCount = PendingStudent::count();
+
+        return view('students.students', compact(
+            'students',
+            'programs',
+            'pendingEditsCount',
+            'pendingRegistrationsCount',
+        ));
     }
 
     // Show form to create new student
@@ -628,6 +637,8 @@ class StudentController extends Controller
     {
         $search = $request->search;
 
+        $perPage = PerPage::resolve($request, 10);
+
         $pending = StudentEditRequest::with('student')
             ->where('status', 'pending')
             ->when($search, function ($query) use ($search) {
@@ -637,7 +648,8 @@ class StudentController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10, ['*'], 'pending_page');
+            ->paginate($perPage, ['*'], 'pending_page')
+            ->withQueryString();
 
         $logs = StudentEditRequest::with('student')
             ->whereIn('status', ['approved', 'rejected'])
@@ -648,7 +660,8 @@ class StudentController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10, ['*'], 'logs_page');
+            ->paginate($perPage, ['*'], 'logs_page')
+            ->withQueryString();
 
         return view('students.pending_requests', compact('pending', 'logs', 'search'));
     }

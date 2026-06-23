@@ -7,6 +7,7 @@
 
     <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset(config('branding.css_path')) }}">
+    <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
     <style>
         body {
             min-height: 100vh;

@@ -102,7 +102,7 @@
         </tbody>
     </table>
 
-    {{ $copies->links('pagination::bootstrap-5') }}
+    @include('layouts.partials.pagination_bar', ['paginator' => $copies])
 
 </div>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminActivity;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 
 class AdminActivityController extends Controller
@@ -36,7 +37,7 @@ class AdminActivityController extends Controller
         }
 
         $activities = $query
-            ->paginate(30)
+            ->paginate(PerPage::resolve($request, 30))
             ->withQueryString();
 
         return view('admin.activities.index', compact(

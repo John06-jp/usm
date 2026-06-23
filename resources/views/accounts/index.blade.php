@@ -5,9 +5,6 @@
 @endsection
 
 @section('content')
-@php
-    $roleCounts = $users->groupBy('role')->map->count();
-@endphp
 <div class="accounts-page">
     <header class="accounts-page__hero">
         <div>
@@ -26,7 +23,7 @@
 
     <div class="accounts-stats">
         <div class="accounts-stat">
-            <div class="accounts-stat__value">{{ $users->count() }}</div>
+            <div class="accounts-stat__value">{{ $users->total() }}</div>
             <div class="accounts-stat__label">Total users</div>
         </div>
         <div class="accounts-stat">
@@ -44,7 +41,7 @@
     </div>
 
     <div class="accounts-card accounts-card--flush-table">
-        @if($users->count() > 0)
+        @if($users->total() > 0)
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
@@ -92,6 +89,7 @@
                     </tbody>
                 </table>
             </div>
+            @include('layouts.partials.pagination_bar', ['paginator' => $users])
         @else
             <div class="accounts-empty">
                 <div class="accounts-empty__icon">👤</div>

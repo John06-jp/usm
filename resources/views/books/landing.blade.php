@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Library catalog — OPAC</title>
     <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset(config('branding.css_path')) }}">
     <link rel="stylesheet" href="{{ asset('css/books/landing.css') }}">
     <link rel="stylesheet" href="{{ asset('css/site-responsive.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/qz-tray/qz-tray.js"></script>
 </head>
 
@@ -344,16 +346,12 @@
             </div>
 
             @if(($viewMode ?? 'books') === 'ebooks')
-                @if(($ebooks?->total() ?? 0) > 0)
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $ebooks->links('pagination::bootstrap-5') }}
-                </div>
+                @if(($ebooks?->total() ?? 0) > 0 || ($ebooks?->hasPages() ?? false))
+                @include('layouts.partials.pagination_bar', ['paginator' => $ebooks])
                 @endif
             @else
-                @if($books->total() > 0)
-            <div class="d-flex justify-content-center mt-4">
-                {{ $books->links('pagination::bootstrap-5') }}
-            </div>
+                @if($books->total() > 0 || $books->hasPages())
+            @include('layouts.partials.pagination_bar', ['paginator' => $books])
                 @endif
             @endif
         </main>

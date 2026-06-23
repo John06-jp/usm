@@ -13,11 +13,9 @@ export const adminNavigation = [
         label: 'Attendance',
         icon: 'ClipboardCheck',
         children: [
-            { label: 'Attendance', href: '/attendance', routeName: 'attendance.scan' },
-            { label: 'Attendance Logs', href: '/attendance-logs', routeName: 'attendance_logs.index', routePrefix: 'attendance_logs.', adminOnly: true },
+            { label: 'Gate Terminal', href: '/attendance', routeName: 'attendance.scan' },
             { label: 'Change Video', href: '/attendance/change-video', routeName: 'attendance.changeVideo' },
             { label: 'Logout Feedback', href: '/attendance/logout-feedback', routeName: 'attendance.feedback.settings' },
-            { label: 'View Feedback Responses', href: '/admin/attendance-feedbacks', routeName: 'admin.attendance.feedbacks', adminOnly: true },
         ],
     },
     {
@@ -39,24 +37,34 @@ export const adminNavigation = [
         icon: 'Library',
         children: [
             { label: 'Circulation', href: '/logs', routeName: 'logs.index', adminOnly: true },
-            { label: 'Outstanding Fines', href: '/admin/fines/outstanding', routeName: 'fines.outstanding', adminOnly: true },
             { label: 'Copy Cataloging', href: '/catalog/copy/openlibrary', routeName: 'catalog.copy.openlibrary.form' },
-            { label: 'Library Holdings Report', href: '/reports/library-holdings', routeName: 'reports.library_holdings.create' },
-            { label: 'Download Book Report (PDF)', href: '/download-book-report', routeName: 'book.report.download' },
             { label: 'Circulation Policy', href: '/admin/circulation-policy', routeName: 'circulation.policy.edit', adminOnly: true },
+        ],
+    },
+    {
+        label: 'Reports',
+        icon: 'FileBarChart',
+        children: [
+            { label: 'Attendance Logs', href: '/attendance-logs', routeName: 'attendance_logs.index', routePrefix: 'attendance_logs.', adminOnly: true },
+            { label: 'Gate Feedback Responses', href: '/admin/attendance-feedbacks', routeName: 'admin.attendance.feedbacks', adminOnly: true },
+            { label: 'Outstanding Fines', href: '/admin/fines/outstanding', routeName: 'fines.outstanding', routePrefix: 'fines.', adminOnly: true },
+            { label: 'Library Holdings Report', href: '/reports/library-holdings', routeName: 'reports.library_holdings.create', routePrefix: 'reports.library_holdings.' },
+            { label: 'Download Book Report (PDF)', href: '/download-book-report', routeName: 'book.report.download' },
+            { label: 'Student Feedback', href: '/feedbacks', routeName: 'feedback.index', routePrefix: 'feedback.' },
+            { label: 'Activity log', href: '/admin/activities', routeName: 'admin.activities.index', routePrefix: 'admin.activities.' },
+            { label: 'Reservation Logs', href: '/rooms/logs', routeName: 'rooms.logs', adminOnly: true },
         ],
     },
     {
         label: 'Admin',
         icon: 'Shield',
         children: [
-            { label: 'Student Feedback', href: '/feedbacks', routeName: 'feedback.index', routePrefix: 'feedback.' },
-            { label: 'Activity log', href: '/admin/activities', routeName: 'admin.activities.index' },
             { label: 'Repository', href: '/files', routeName: 'files.index', adminOnly: true },
             { label: 'Prospectus Manager', href: '/prospectus', routeName: 'prospectus.index', routePrefix: 'prospectus.', adminOnly: true },
             { label: 'View Pantas Users', href: '/view-users', routeName: 'users.index', adminOnly: true },
             { label: 'MARC catalog frameworks', href: '/admin/catalog-frameworks', routeName: 'admin.catalog_frameworks.index', adminOnly: true },
             { label: 'Catalog dropdown options', href: '/admin/catalog-select-options', routeName: 'admin.catalog_select_options.index', adminOnly: true },
+            { label: 'SMS Blast', href: '/sms-blast', routeName: 'sms.page', adminOnly: true },
         ],
     },
     {
@@ -67,8 +75,6 @@ export const adminNavigation = [
             { label: 'Book a Room', href: '/rooms/book', routeName: 'rooms.book' },
             { label: 'View Schedule', href: '/rooms/schedule', routeName: 'rooms.schedule' },
             { label: 'Pending Reservations', href: '/rooms/pending', routeName: 'rooms.pending', adminOnly: true },
-            { label: 'Reservation Logs', href: '/rooms/logs', routeName: 'rooms.logs', adminOnly: true },
-            { label: 'SMS Blast', href: '/sms-blast', routeName: 'sms.page', adminOnly: true },
         ],
     },
 ];
@@ -100,6 +106,10 @@ export function filterNavigation(items, isAdmin) {
 function findTrail(items, routeName, parents = []) {
     for (const item of items) {
         if (item.routeName === routeName) {
+            return [...parents, item];
+        }
+
+        if (item.routePrefix && routeName?.startsWith(item.routePrefix)) {
             return [...parents, item];
         }
 

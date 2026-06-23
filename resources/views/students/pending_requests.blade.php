@@ -17,13 +17,13 @@
         <!-- Pending Requests -->
         <div class="tab-pane fade show active" id="pending" role="tabpanel">
             @include('students.partials.requests_table', ['requests' => $pending, 'showActions' => true])
-            {{ $pending->links() }} 
+            @include('layouts.partials.pagination_bar', ['paginator' => $pending])
         </div>
 
         <!-- Logs -->
         <div class="tab-pane fade" id="logs" role="tabpanel">
             @include('students.partials.requests_table', ['requests' => $logs, 'showActions' => false])
-            {{ $logs->links() }}
+            @include('layouts.partials.pagination_bar', ['paginator' => $logs])
         </div>
     </div>
 </div>

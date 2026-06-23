@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
     <link rel="stylesheet" href="{{ asset('css/books/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/site-responsive.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
 
     @stack('styles')
@@ -32,9 +33,9 @@
             <div class="attendance_dropdown">
                 <button class="attendance_dropdown-button">Attendance</button>
                 <div class="attendance_dropdown-content">
-                    <a href="{{ route('attendance.scan') }}">Attendance</a>
-                    <a href="{{ route('attendance_logs.index') }}">Attendance-logs</a>
+                    <a href="{{ route('attendance.scan') }}">Gate Terminal</a>
                     <a href="{{ route('attendance.changeVideo') }}">Change Video</a>
+                    <a href="{{ route('attendance.feedback.settings') }}">Logout Feedback</a>
                 </div>
             </div>
 
@@ -53,6 +54,7 @@
                 <div class="logs_dropdown-content">
                     @can('isAdmin')
                     <a href="{{ route('users.index') }}">View Pantas Users</a>
+                    <a href="{{ route('sms.page') }}">SMS Blast</a>
                     @endcan
                 </div>
             </div>
@@ -63,7 +65,13 @@
                 <button class="logs_dropdown-button">Circulation</button>
                 <div class="logs_dropdown-content">
                     @include('layouts.partials.circulation_nav_links')
-                    <a href="{{ route('students.report') }}">Student Report</a>
+                </div>
+            </div>
+
+            <div class="logs_dropdown">
+                <button class="logs_dropdown-button">Reports</button>
+                <div class="logs_dropdown-content">
+                    @include('layouts.partials.reports_nav_links')
                 </div>
             </div>
 
@@ -76,8 +84,6 @@
                     <a href="{{ route('rooms.book') }}">Book a Room</a>
                     <a href="{{ route('rooms.schedule') }}">View Schedule</a>
                     <a href="{{ route('rooms.pending') }}">Pending Reservations</a>
-                    <a href="{{ route('rooms.logs') }}">Reservation Logs</a>
-                    <a href="{{ route('admin.attendance.feedbacks') }}">Attendance feedback</a>
                 </div>
             </div>
 

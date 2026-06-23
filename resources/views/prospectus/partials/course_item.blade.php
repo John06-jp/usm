@@ -1,19 +1,22 @@
-<li id="course-{{ $course->id }}" class="flex justify-between items-center border-b pb-1">
-    <span>
-        <strong>{{ $course->course_code }}</strong> — {{ $course->course_name }}
-    </span>
-    <div class="flex gap-2">
-        <!-- Edit -->
-        <button type="button"   {{-- ✅ ensures no reload --}}
-                class="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
-                onclick="openEditModal({{ $course->id }}, '{{ $course->course_code }}', '{{ $course->course_name }}')">
+<li id="course-{{ $course->id }}" class="prog-mgr__course">
+    <div class="prog-mgr__course-info">
+        <span class="prog-mgr__course-code">{{ $course->course_code }}</span>
+        <span class="prog-mgr__course-name">{{ $course->course_name }}</span>
+    </div>
+    <div class="prog-mgr__course-actions">
+        <button type="button"
+                class="prog-mgr__icon-btn prog-mgr__icon-btn--edit"
+                data-action="edit-course"
+                data-course-id="{{ $course->id }}"
+                data-course-code="{{ $course->course_code }}"
+                data-course-name="{{ $course->course_name }}">
             Edit
         </button>
-
-        <!-- Delete -->
-        <button type="button"   {{-- ✅ ensures no reload --}}
-                class="bg-red-600 text-white px-2 py-1 rounded text-xs"
-                onclick="openDeleteModal({{ $course->id }}, '{{ $course->course_code }}')">
+        <button type="button"
+                class="prog-mgr__icon-btn prog-mgr__icon-btn--delete"
+                data-action="delete-course"
+                data-course-id="{{ $course->id }}"
+                data-course-code="{{ $course->course_code }}">
             Delete
         </button>
     </div>

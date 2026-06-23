@@ -7,6 +7,7 @@ use App\Models\AttendanceLog;
 use App\Models\Program;
 use App\Models\Student;
 use App\Services\PatronAttendanceReportService;
+use App\Support\PerPage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AttendanceLogsExport;
@@ -41,14 +42,15 @@ class AttendanceLogController extends Controller
                 });
             })
             ->orderBy('scanned_at', 'desc')
-            ->paginate(10)
+            ->paginate(PerPage::resolve($request, 10))
             ->withQueryString();
 
         $students = Student::orderBy('lastname')->get();
-        $courses = Student::select('course')->distinct()->pluck('course');
-        $years = Student::select('year')->distinct()->pluck('year');
+        $courses = Student::select('course')->distinct()->orderBy('course')->pluck('course');
+        $years = Student::select('year')->whereNotNull('year')->where('year', '!=', '')->distinct()->orderBy('year')->pluck('year');
+        $programs = Program::orderBy('program_name')->get();
 
-        return view('attendance_logs.index', compact('logs', 'students', 'courses', 'years'));
+        return view('attendance_logs.index', compact('logs', 'students', 'courses', 'years', 'programs'));
     }
 
     public function create()

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BookLog;
 use App\Models\AdminActivity;
 use App\Services\AdminActivityLogger;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +18,7 @@ class FineClearanceController extends Controller
         $logs = (clone $base)
             ->with(['book', 'student', 'clearedBy'])
             ->orderByDesc('returned_date')
-            ->paginate(20)
+            ->paginate(PerPage::resolve($request, 20))
             ->withQueryString();
 
         $totalOutstanding = round((float) (clone $base)->sum(DB::raw('COALESCE(fine_balance, fine_incurred)')), 2);

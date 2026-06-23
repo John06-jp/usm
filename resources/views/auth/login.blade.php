@@ -1,93 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Important for mobile scaling -->
-    <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+@extends('layouts.auth')
 
-    <style>
-        .rounded-custom {
-            border-radius: 20px;
-            padding: 14px;
-            font-size: 18px;
-        }
+@section('title', 'Sign in')
 
-        .login-title {
-            font-size: 26px;
-        }
+@section('content')
+    @if(file_exists(public_path('images/d.png')))
+        <div class="auth-page__logo-wrap">
+            <img src="{{ asset('images/d.png') }}" alt="{{ config('app.name') }}" class="auth-page__logo">
+        </div>
+    @endif
 
-        .login-subtitle {
-            font-size: 17px;
-        }
-
-        @media (max-width: 576px) {
-            .login-title {
-                font-size: 22px;
-            }
-
-            .login-subtitle {
-                font-size: 15px;
-            }
-
-            .rounded-custom {
-                font-size: 16px;
-                padding: 12px;
-            }
-
-            .card {
-                padding: 2rem 1rem !important;
-            }
-        }
-    </style>
-</head>
-<body class="bg-light d-flex justify-content-center align-items-center" style="height: 100vh;">
-
-    <div class="card shadow login-card w-100 mx-3" style="max-width: 450px; padding: 3rem;">
-        <div class="text-center">
-            <img src="{{ asset('images/d.png') }}" alt="Area 51 Logo" class="mb-3" style="max-width: 180px; width: 100%;">
+    <div class="auth-page__hero">
+        <h1>Welcome back</h1>
         </div>
 
-        <h5 class="text-center fw-bold login-title">Welcome! Let’s Begin</h5>
-        <p class="text-center text-muted login-subtitle">Log in to Continue</p>
+    @if(session('status'))
+        <div class="alert alert-success auth-page__alert">{{ session('status') }}</div>
+    @endif
 
-        <form method="POST" action="{{ route('login') }}">
-            @csrf
-            <div class="mb-4">
-                <input type="email" name="email" class="form-control rounded-custom" placeholder="Email" required autofocus>
-            </div>
-            <div class="mb-3">
-                <input type="password" name="password" class="form-control rounded-custom" placeholder="Password" required>
-            </div>
+    @if(session('error'))
+        <div class="alert alert-danger auth-page__alert">{{ session('error') }}</div>
+    @endif
 
-            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                    <label class="form-check-label text-lowercase" for="remember">
-                        Remember me
-                    </label>
-                </div>
-                <a href="#" class="text-primary">Forgot password?</a>
-            </div>
+    <form method="POST" action="{{ route('login') }}" novalidate>
+        @csrf
 
+        <div class="auth-page__field">
+            <label for="email">Email</label>
+            <input type="email"
+                   name="email"
+                   id="email"
+                   class="form-control @error('email') is-invalid @enderror"
+                   value="{{ old('email') }}"
+                   placeholder=""
+                   required
+                   autofocus
+                   autocomplete="username">
             @error('email')
-                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                <div class="invalid-feedback d-block">{{ $message }}</div>
             @enderror
+        </div>
 
-            <div class="d-grid mt-4">
-                <button type="submit" class="btn btn-primary btn-lg">Login</button>
-            </div>
-            
-        
-            
-            <div class="d-grid mt-3">
-                <a href="{{ route('patron.register') }}" class="btn btn-outline-primary btn-lg">
-                    Register
-                </a>
-            </div>
+        <div class="auth-page__field">
+            <label for="password">Password</label>
+            <input type="password"
+                   name="password"
+                   id="password"
+                   class="form-control @error('password') is-invalid @enderror"
+                   placeholder=""
+                   required
+                   autocomplete="current-password">
+            @error('password')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
 
-        </form>
-    </div>
+        <div class="auth-page__row">
+            <label class="auth-page__remember" for="remember">
+                <input type="checkbox" name="remember" id="remember" value="1" @checked(old('remember'))>
+                Remember me
+            </label>
+            <a href="{{ route('password.request') }}" class="auth-page__link">Forgot password?</a>
+        </div>
 
-</body>
-</html>
+        <button type="submit" class="auth-page__btn auth-page__btn--primary">Sign in</button>
+    </form>
+
+    <div class="auth-page__divider">Patron services</div>
+
+    <a href="{{ route('patron.register') }}" class="auth-page__btn auth-page__btn--outline">
+        Patron self-registration
+    </a>
+@endsection
+
+@section('footer')
+
+@endsection

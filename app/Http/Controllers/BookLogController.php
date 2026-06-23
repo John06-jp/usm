@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Support\LoanDueDate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Support\PerPage;
 use Illuminate\Support\Facades\DB;
 
 class BookLogController extends Controller
@@ -175,7 +176,7 @@ class BookLogController extends Controller
             }
         }
 
-        $logs = $logs->latest()->paginate(10);
+        $logs = $logs->latest()->paginate(PerPage::resolve($request, 10))->withQueryString();
 
         $prefillPatronLabel = '';
         if ($request->filled('student_id')) {

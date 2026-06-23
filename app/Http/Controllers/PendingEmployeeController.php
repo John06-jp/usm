@@ -29,10 +29,17 @@ class PendingEmployeeController extends Controller
     {
         $pendingStudents = PendingStudent::with('role')->latest()->get();
         $pendingEmployees = PendingEmployee::with('role')->latest()->get();
+        $programs = Program::orderBy('program_name')->get();
         $defaultTab = 'employees';
         $backRoute = route('employees.index');
 
-        return view('pending.index', compact('pendingStudents', 'pendingEmployees', 'defaultTab', 'backRoute'));
+        return view('pending.index', compact(
+            'pendingStudents',
+            'pendingEmployees',
+            'programs',
+            'defaultTab',
+            'backRoute',
+        ));
     }
 
     public function store(Request $request)

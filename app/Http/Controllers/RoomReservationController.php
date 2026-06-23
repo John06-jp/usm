@@ -8,6 +8,7 @@ use App\Models\ReservationStudent;
 use App\Models\ReservationLog;
 use App\Models\AdminActivity;
 use App\Services\AdminActivityLogger;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 use App\Mail\ReservationApprovedMail;
 use Illuminate\Support\Facades\Mail;
@@ -218,12 +219,13 @@ class RoomReservationController extends Controller
         return response()->json($bookedSlots);
     }
     
-    public function logs()
+    public function logs(Request $request)
     {
         $logs = \App\Models\ReservationLog::with(['reservation.room', 'user'])
             ->latest()
-            ->paginate(20);
-    
+            ->paginate(PerPage::resolve($request, 20))
+            ->withQueryString();
+
         return view('rooms.logs', compact('logs'));
     }
     

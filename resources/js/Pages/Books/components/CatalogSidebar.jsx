@@ -38,6 +38,9 @@ function catalogParams(filters, overrides = {}) {
     if (merged.status) {
         params.status = merged.status;
     }
+    if (merged.per_page) {
+        params.per_page = merged.per_page;
+    }
 
     return params;
 }

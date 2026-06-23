@@ -15,6 +15,7 @@
     @yield('styles')
 
     @vite(['resources/css/app.css', 'resources/js/admin-shell.jsx'])
+    <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
 </head>
 <body class="theme font-sans antialiased admin-page">
     <script type="application/json" id="admin-shell-props">

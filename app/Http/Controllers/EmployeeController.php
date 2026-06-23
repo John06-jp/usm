@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\PendingEmployee;
 use App\Models\Program;
 use App\Models\AdminActivity;
 use App\Services\AdminActivityLogger;
 use App\Support\MiddleInitial;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -64,9 +66,11 @@ class EmployeeController extends Controller
             $query->where('year_start_work', $request->year_start_work);
         }
 
-        $faculty = $query->orderBy('lastname')->paginate(15)->withQueryString();
+        $faculty = $query->orderBy('lastname')->paginate(PerPage::resolve($request, 15))->withQueryString();
 
-        return view('employees.index', compact('faculty', 'programs', 'workStartYears'));
+        $pendingRegistrationsCount = PendingEmployee::count();
+
+        return view('employees.index', compact('faculty', 'programs', 'workStartYears', 'pendingRegistrationsCount'));
     }
 
     public function create()

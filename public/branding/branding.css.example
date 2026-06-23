@@ -1,4 +1,19 @@
+/*
+ * Brand font files (bundled under public/vendor/fontsource).
+ * To use another font: change --brand-font-family below and swap these @imports.
+ */
+@import url('../vendor/fontsource/poppins/latin-400.css');
+@import url('../vendor/fontsource/poppins/latin-600.css');
+@import url('../vendor/fontsource/poppins/latin-700.css');
+
 :root {
+  /*
+   * Typography (change family name to match @imports above)
+   */
+  --brand-font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --brand-font-family-heading: var(--brand-font-family);
+  --brand-font-family-mono: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', Consolas, monospace;
+
   /*
    * Primary brand tokens (edit these per school)
    */

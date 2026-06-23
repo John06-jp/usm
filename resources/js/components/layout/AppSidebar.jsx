@@ -7,6 +7,7 @@ import {
     ClipboardCheck,
     Database,
     DoorOpen,
+    FileBarChart,
     Home,
     Library,
     Shield,
@@ -50,6 +51,7 @@ const iconMap = {
     Library,
     Shield,
     DoorOpen,
+    FileBarChart,
 };
 
 const activeItemClass =

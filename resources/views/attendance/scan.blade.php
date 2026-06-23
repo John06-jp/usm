@@ -3,10 +3,9 @@
 <head>
   <title>Library Attendance & Book RFID</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ asset(config('branding.css_path')) }}">
   <link rel="stylesheet" href="{{ asset('css/attendance/scan.css') }}">
-  <link href="{{ asset('vendor/fontsource/poppins/latin-400.css') }}" rel="stylesheet">
-  <link href="{{ asset('vendor/fontsource/poppins/latin-600.css') }}" rel="stylesheet">
-  <link href="{{ asset('vendor/fontsource/poppins/latin-700.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
   <style>
     .marquee-container {
       width: 100%;
@@ -23,7 +22,7 @@
       white-space: nowrap;
       padding-left: 100%;
       animation: scroll-text 15s linear infinite;
-      font-family: 'Poppins', sans-serif;
+      font-family: var(--brand-font-family, 'Poppins', sans-serif);
       font-weight: 700;
       font-size: 24px;
     }

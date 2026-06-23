@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Support\AdminShell;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -56,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'adminActivity' => fn () => $shellProps['adminActivity'],
+            'perPageOptions' => PerPage::options(),
         ];
     }
 }

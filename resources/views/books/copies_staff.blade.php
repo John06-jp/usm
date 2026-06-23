@@ -90,7 +90,7 @@
     </div>
 
     <div class="d-flex justify-content-center mt-3">
-        {{ $copies->links('pagination::bootstrap-5') }}
+        @include('layouts.partials.pagination_bar', ['paginator' => $copies])
     </div>
 @endsection
 

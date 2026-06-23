@@ -7,6 +7,7 @@ use App\Models\Program;
 use App\Models\ProgramCourse;
 use App\Models\AdminActivity;
 use App\Services\AdminActivityLogger;
+use App\Support\PerPage;
 use Illuminate\Http\Request;
 
 class EbookController extends Controller
@@ -48,7 +49,7 @@ class EbookController extends Controller
             $query->where('course_id', $request->course_id);
         }
     
-        $ebooks = $query->latest()->paginate(15)->withQueryString();
+        $ebooks = $query->latest()->paginate(PerPage::resolve($request, 15))->withQueryString();
 
         return view('ebooks.index', [
             'ebooks' => $ebooks,

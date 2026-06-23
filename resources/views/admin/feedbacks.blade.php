@@ -1,200 +1,190 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Attendance Feedback Report</title>
-    <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-</head>
+@extends('layouts.sec')
 
-<body style="background:#f4f6f9">
+@section('title', 'Attendance Feedback Report')
 
-<div class="container py-5">
+@section('styles')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/attendance-feedback-report.css') }}">
+@endsection
 
-    {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">📊 Attendance Feedback Report</h2>
+@section('content')
+@php
+    $active = request('rating');
+    $pct = fn (int $count): float => $total > 0 ? round(($count / $total) * 100, 1) : 0;
 
-        <a href="{{ route('book.index') }}" class="btn btn-secondary">
-            Home
-        </a>
-    </div>
+    $filters = [
+        ['key' => null, 'label' => 'All', 'count' => $total, 'class' => ''],
+        ['key' => 'excellent', 'label' => 'Excellent', 'count' => $excellent, 'class' => 'afr-filter--excellent'],
+        ['key' => 'good', 'label' => 'Good', 'count' => $good, 'class' => 'afr-filter--good'],
+        ['key' => 'medium', 'label' => 'Medium', 'count' => $medium, 'class' => 'afr-filter--medium'],
+        ['key' => 'poor', 'label' => 'Poor', 'count' => $poor, 'class' => 'afr-filter--poor'],
+        ['key' => 'very_bad', 'label' => 'Very bad', 'count' => $veryBad, 'class' => 'afr-filter--very-bad'],
+        ['key' => 'declined', 'label' => 'Declined', 'count' => $declined, 'class' => 'afr-filter--declined'],
+    ];
 
-    @php $active = request('rating'); @endphp
+    $activeLabel = match ($active) {
+        'excellent' => 'Excellent',
+        'good' => 'Good',
+        'medium' => 'Medium',
+        'poor' => 'Poor',
+        'very_bad' => 'Very bad',
+        'declined' => 'Declined',
+        default => 'All responses',
+    };
 
-    {{-- TOTAL (Clickable Reset) --}}
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <a href="{{ route('admin.attendance.feedbacks') }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm bg-dark text-white {{ !$active ? 'border-3 border-light' : '' }}">
-                    <div class="card-body">
-                        <h6>Total Responses</h6>
-                        <h3>{{ $total }}</h3>
-                        <small>Click to reset filter</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </div>
+    $ratingLabel = fn (?string $rating, bool $declined): string => match (true) {
+        $declined => 'Declined',
+        $rating === 'excellent' => 'Excellent',
+        $rating === 'good' => 'Good',
+        $rating === 'medium' => 'Medium',
+        $rating === 'poor' => 'Poor',
+        $rating === 'very_bad' => 'Very bad',
+        default => 'No rating',
+    };
 
-    {{-- RATING CARDS --}}
-    <div class="row g-3 mb-4">
+    $ratingClass = fn (?string $rating, bool $declined): string => match (true) {
+        $declined => 'afr-badge--declined',
+        $rating === 'excellent' => 'afr-badge--excellent',
+        $rating === 'good' => 'afr-badge--good',
+        $rating === 'medium' => 'afr-badge--medium',
+        $rating === 'poor' => 'afr-badge--poor',
+        $rating === 'very_bad' => 'afr-badge--very-bad',
+        default => 'afr-badge--none',
+    };
+@endphp
 
-        <div class="col-md-2">
-            <a href="{{ route('admin.attendance.feedbacks', ['rating' => 'excellent']) }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm border-success {{ $active == 'excellent' ? 'border-3' : '' }}">
-                    <div class="card-body text-success">
-                        <h6>Excellent</h6>
-                        <h3>{{ $excellent }}</h3>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-2">
-            <a href="{{ route('admin.attendance.feedbacks', ['rating' => 'good']) }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm border-primary {{ $active == 'good' ? 'border-3' : '' }}">
-                    <div class="card-body text-primary">
-                        <h6>Good</h6>
-                        <h3>{{ $good }}</h3>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-2">
-            <a href="{{ route('admin.attendance.feedbacks', ['rating' => 'medium']) }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm border-warning {{ $active == 'medium' ? 'border-3' : '' }}">
-                    <div class="card-body text-warning">
-                        <h6>Medium</h6>
-                        <h3>{{ $medium }}</h3>
-                    </div>
-                </div>
-            </a>
+<div class="attendance-feedback-report">
+    <header class="afr-hero">
+        <div>
+            <p class="afr-eyebrow">Attendance · checkout</p>
+            <h1 class="afr-title">Exit feedback report</h1>
+            <p class="afr-lede">
+                Ratings collected when students leave the library. Filter by sentiment to review individual responses.
+            </p>
         </div>
 
-        <div class="col-md-2">
-            <a href="{{ route('admin.attendance.feedbacks', ['rating' => 'poor']) }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm border-danger {{ $active == 'poor' ? 'border-3' : '' }}">
-                    <div class="card-body text-danger">
-                        <h6>Poor</h6>
-                        <h3>{{ $poor }}</h3>
-                    </div>
-                </div>
-            </a>
+        <div class="afr-stamp" aria-label="{{ $total }} total responses">
+            <span class="afr-stamp__label">Total responses</span>
+            <span class="afr-stamp__value">{{ number_format($total) }}</span>
+            <span class="afr-stamp__hint">Since tracking began</span>
         </div>
+    </header>
 
-        <div class="col-md-2">
-            <a href="{{ route('admin.attendance.feedbacks', ['rating' => 'very_bad']) }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm border-dark {{ $active == 'very_bad' ? 'border-3' : '' }}">
-                    <div class="card-body text-dark">
-                        <h6>Very Bad</h6>
-                        <h3>{{ $veryBad }}</h3>
-                    </div>
-                </div>
+    <nav class="afr-filters" aria-label="Filter by rating">
+        @foreach ($filters as $filter)
+            @php
+                $isActive = ($filter['key'] === null && ! $active) || ($active === $filter['key']);
+                $href = $filter['key']
+                    ? route('admin.attendance.feedbacks', ['rating' => $filter['key']])
+                    : route('admin.attendance.feedbacks');
+            @endphp
+            <a
+                href="{{ $href }}"
+                class="afr-filter {{ $filter['class'] }} {{ $isActive ? 'is-active' : '' }}"
+                @if($isActive) aria-current="page" @endif
+            >
+                <span class="afr-filter__label">{{ $filter['label'] }}</span>
+                <span class="afr-filter__count">{{ number_format($filter['count']) }}</span>
             </a>
-        </div>
+        @endforeach
+    </nav>
 
-        <div class="col-md-2">
-            <a href="{{ route('admin.attendance.feedbacks', ['rating' => 'declined']) }}" class="text-decoration-none">
-                <div class="card text-center shadow-sm border-secondary {{ $active == 'declined' ? 'border-3' : '' }}">
-                    <div class="card-body text-secondary">
-                        <h6>Declined</h6>
-                        <h3>{{ $declined }}</h3>
-                    </div>
-                </div>
-            </a>
-        </div>
+    @if ($total > 0)
+        <section class="afr-distribution" aria-label="Overall sentiment distribution">
+            <h2 class="afr-distribution__heading">Sentiment distribution</h2>
 
-    </div>
-
-
-    {{-- DISTRIBUTION BAR (RESTORED) --}}
-    @if($total > 0)
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="mb-3">Overall Distribution</h5>
-
-            <div class="progress" style="height: 28px;">
-
-                <div class="progress-bar bg-success"
-                     style="width: {{ ($excellent/$total)*100 }}%"
-                     title="Excellent"></div>
-
-                <div class="progress-bar bg-primary"
-                     style="width: {{ ($good/$total)*100 }}%"
-                     title="Good"></div>
-
-                <div class="progress-bar bg-warning"
-                     style="width: {{ ($medium/$total)*100 }}%"
-                     title="Medium"></div>
-
-                <div class="progress-bar bg-danger"
-                     style="width: {{ ($poor/$total)*100 }}%"
-                     title="Poor"></div>
-
-                <div class="progress-bar bg-dark"
-                     style="width: {{ ($veryBad/$total)*100 }}%"
-                     title="Very Bad"></div>
-
-                <div class="progress-bar bg-secondary"
-                     style="width: {{ ($declined/$total)*100 }}%"
-                     title="Declined"></div>
-
+            <div class="afr-bar" role="img" aria-label="Distribution of {{ $total }} responses by rating">
+                @if ($excellent > 0)
+                    <div class="afr-bar__segment afr-bar__segment--excellent" style="width: {{ $pct($excellent) }}%" title="Excellent {{ $pct($excellent) }}%"></div>
+                @endif
+                @if ($good > 0)
+                    <div class="afr-bar__segment afr-bar__segment--good" style="width: {{ $pct($good) }}%" title="Good {{ $pct($good) }}%"></div>
+                @endif
+                @if ($medium > 0)
+                    <div class="afr-bar__segment afr-bar__segment--medium" style="width: {{ $pct($medium) }}%" title="Medium {{ $pct($medium) }}%"></div>
+                @endif
+                @if ($poor > 0)
+                    <div class="afr-bar__segment afr-bar__segment--poor" style="width: {{ $pct($poor) }}%" title="Poor {{ $pct($poor) }}%"></div>
+                @endif
+                @if ($veryBad > 0)
+                    <div class="afr-bar__segment afr-bar__segment--very-bad" style="width: {{ $pct($veryBad) }}%" title="Very bad {{ $pct($veryBad) }}%"></div>
+                @endif
+                @if ($declined > 0)
+                    <div class="afr-bar__segment afr-bar__segment--declined" style="width: {{ $pct($declined) }}%" title="Declined {{ $pct($declined) }}%"></div>
+                @endif
             </div>
-        </div>
-    </div>
+
+            <div class="afr-legend">
+                <span class="afr-legend__item"><span class="afr-legend__dot" style="background: var(--afr-excellent)"></span> Excellent {{ $pct($excellent) }}%</span>
+                <span class="afr-legend__item"><span class="afr-legend__dot" style="background: var(--afr-good)"></span> Good {{ $pct($good) }}%</span>
+                <span class="afr-legend__item"><span class="afr-legend__dot" style="background: var(--afr-medium)"></span> Medium {{ $pct($medium) }}%</span>
+                <span class="afr-legend__item"><span class="afr-legend__dot" style="background: var(--afr-poor)"></span> Poor {{ $pct($poor) }}%</span>
+                <span class="afr-legend__item"><span class="afr-legend__dot" style="background: var(--afr-very-bad)"></span> Very bad {{ $pct($veryBad) }}%</span>
+                <span class="afr-legend__item"><span class="afr-legend__dot" style="background: var(--afr-declined)"></span> Declined {{ $pct($declined) }}%</span>
+            </div>
+        </section>
     @endif
 
-
-    {{-- TABLE --}}
-    <div class="card shadow-sm">
-        <div class="card-body">
-
-            <h5 class="mb-3">
-                {{ $active ? strtoupper(str_replace('_',' ', $active)) . " Responses" : "All Responses" }}
-            </h5>
-
-            <table class="table table-bordered table-striped">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Student</th>
-                        <th>Rating</th>
-                        <th>Declined</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($feedbacks as $index => $feedback)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-
-                            <td>
-                                {{ optional($feedback->student)->lastname ?? '' }},
-                                {{ optional($feedback->student)->firstname ?? '' }}
-                            </td>
-
-                            <td>{{ $feedback->rating ?? '-' }}</td>
-
-                            <td>{{ $feedback->declined ? 'Yes' : 'No' }}</td>
-
-                            <td>{{ $feedback->created_at?->format('M d, Y h:i A') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center">
-                                No feedback found.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-
-            </table>
-
+    <section class="afr-panel">
+        <div class="afr-panel__head">
+            <h2 class="afr-panel__title">{{ $activeLabel }}</h2>
+            <span class="afr-panel__meta">{{ number_format($feedbacks->count()) }} {{ $feedbacks->count() === 1 ? 'record' : 'records' }}</span>
         </div>
-    </div>
 
+        @if ($feedbacks->isEmpty())
+            <div class="afr-empty">
+                <p class="afr-empty__title">No responses in this view</p>
+                <p class="afr-empty__text">
+                    @if ($active)
+                        No students rated their visit as “{{ strtolower($activeLabel) }}”. Choose another filter or view all responses.
+                    @else
+                        Responses will appear here once students submit exit feedback at checkout.
+                    @endif
+                </p>
+            </div>
+        @else
+            <div class="afr-table-wrap">
+                <table class="afr-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Student</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Declined</th>
+                            <th scope="col">Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($feedbacks as $index => $feedback)
+                            @php
+                                $lastname = optional($feedback->student)->lastname ?? '';
+                                $firstname = optional($feedback->student)->firstname ?? '';
+                                $studentName = trim("{$lastname}, {$firstname}", ', ') ?: 'Unknown student';
+                            @endphp
+                            <tr>
+                                <td class="afr-num">{{ $index + 1 }}</td>
+                                <td class="afr-student">{{ $studentName }}</td>
+                                <td>
+                                    <span class="afr-badge {{ $ratingClass($feedback->rating, (bool) $feedback->declined) }}">
+                                        {{ $ratingLabel($feedback->rating, (bool) $feedback->declined) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if ($feedback->declined)
+                                        <span class="afr-yes">Yes</span>
+                                    @else
+                                        <span class="afr-no">No</span>
+                                    @endif
+                                </td>
+                                <td class="afr-date">{{ $feedback->created_at?->format('M j, Y · g:i A') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </section>
 </div>
-
-</body>
-</html>
+@endsection

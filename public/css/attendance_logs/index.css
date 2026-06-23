@@ -363,8 +363,8 @@
 }
 
         /*end of header*/
-        
-        * {
+
+        .legacy-page-content * {
     border-radius: 0 !important;
 }
 

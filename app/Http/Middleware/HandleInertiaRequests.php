@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AdminShell;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,6 +36,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $shellProps = AdminShell::pageProps($request);
+
         return [
             ...parent::share($request),
             'branding' => [
@@ -46,6 +49,13 @@ class HandleInertiaRequests extends Middleware
                     'maroon' => '#932c27',
                 ],
             ],
+            'routeName' => fn () => $shellProps['routeName'],
+            'auth' => fn () => $shellProps['auth'],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
+            'adminActivity' => fn () => $shellProps['adminActivity'],
         ];
     }
 }

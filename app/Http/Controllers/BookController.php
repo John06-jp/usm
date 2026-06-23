@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use App\Models\Book;
 use App\Models\BookReservation;
 use App\Models\Ebook;
@@ -339,47 +340,50 @@ class BookController extends Controller
 
    public function index(Request $request)
     {
-        // --- Get programs for filter dropdown ---
         $programs = Program::orderBy('program_name')->get();
+
+        $statusFilter = $request->input('status');
+        $programId = $request->filled('program') ? (int) $request->input('program') : null;
+        $yearFilter = $request->input('year_filter');
+        $validYearFilters = ['exact', 'before', 'after', 'between'];
 
         $hasActiveQuery = $request->boolean('show_all')
             || $request->filled('search')
-            || $request->filled('program')
-            || ($request->filled('year_filter') && $request->filled('year1'))
-            || ($request->has('status') && in_array($request->status, ['Available', 'Borrowed'], true));
+            || $programId
+            || (in_array($yearFilter, $validYearFilters, true) && $request->filled('year1'))
+            || in_array($statusFilter, ['Available', 'Borrowed'], true);
 
         if (! $hasActiveQuery) {
             $books = new LengthAwarePaginator([], 0, 10, 1, [
                 'path' => $request->url(),
                 'query' => $request->query(),
             ]);
-            $courses = collect();
-            $years = collect();
 
-            return view('books.index', compact('books', 'programs', 'courses', 'years', 'hasActiveQuery'));
+            return Inertia::render('Books/Index', [
+                'books' => $books,
+                'programs' => $programs,
+                'filters' => $this->catalogFiltersFromRequest($request),
+                'hasActiveQuery' => false,
+            ]);
         }
-    
-        // --- Base filtered query ---
+
         $filteredQuery = Book::query()->whereNull('archived_at');
-    
-        // Status filter
-        if ($request->has('status') && in_array($request->status, ['Available', 'Borrowed'])) {
-            $filteredQuery->where('availability', $request->status);
+
+        if (in_array($statusFilter, ['Available', 'Borrowed'], true)) {
+            $filteredQuery->where('availability', $statusFilter);
         }
-    
-        // Program filter
-        if ($request->filled('program')) {
-            $filteredQuery->whereHas('programs', function ($q) use ($request) {
-                $q->where('programs.id', $request->program);
+
+        if ($programId) {
+            $filteredQuery->whereHas('programs', function ($q) use ($programId) {
+                $q->where('programs.id', $programId);
             });
         }
-    
-        // Year filter
-        if ($request->filled('year_filter') && $request->filled('year1')) {
-            $year1 = (int) $request->year1;
-            $year2 = (int) $request->year2;
-    
-            switch ($request->year_filter) {
+
+        if (in_array($yearFilter, $validYearFilters, true) && $request->filled('year1')) {
+            $year1 = (int) $request->input('year1');
+            $year2 = (int) $request->input('year2');
+
+            switch ($yearFilter) {
                 case 'exact':
                     $filteredQuery->where('pub_year', $year1);
                     break;
@@ -391,43 +395,76 @@ class BookController extends Controller
                     break;
                 case 'between':
                     if ($request->filled('year2')) {
-                        $filteredQuery->whereBetween('pub_year', [$year1, $year2]);
+                        $filteredQuery->whereBetween('pub_year', [min($year1, $year2), max($year1, $year2)]);
                     }
                     break;
             }
         }
-    
-        // Search (multi-field, multi-keyword)
+
         $this->applyBookSearch($filteredQuery, $request->input('search'));
-    
-        // --- Dynamic dropdowns for course/year ---
-        $courses = Book::whereNull('archived_at')
-            ->when($request->program, fn($q) => $q->whereHas('programs', fn($p) => $p->where('program_name', $request->program)))
-            ->select('course')->distinct()->orderBy('course')->pluck('course');
-    
-        $years = Book::whereNull('archived_at')
-            ->when($request->program, fn($q) => $q->whereHas('programs', fn($p) => $p->where('program_name', $request->program)))
-            ->when($request->course, fn($q) => $q->where('course', $request->course))
-            ->select('year')->distinct()->orderBy('year')->pluck('year');
-    
-        // --- Aggregate on filtered query ---
+
         $books = DB::table(DB::raw("({$filteredQuery->toSql()}) as sub"))
             ->mergeBindings($filteredQuery->getQuery())
             ->select(
                 'main_author',
                 'title_statement',
                 'pub_year',
-                'content_type', // add this
+                'content_type',
                 DB::raw('COUNT(*) as copies'),
                 DB::raw('MIN(id) as sample_id')
             )
-            ->groupBy('main_author', 'title_statement', 'pub_year', 'content_type') // add content_type here
+            ->groupBy('main_author', 'title_statement', 'pub_year', 'content_type')
             ->orderBy('title_statement')
             ->paginate(10)
             ->withQueryString();
 
-    
-        return view('books.index', compact('books', 'programs', 'courses', 'years', 'hasActiveQuery'));
+        $singleCopyIds = collect($books->items())
+            ->filter(fn ($row) => (int) $row->copies === 1)
+            ->pluck('sample_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $availabilityById = $singleCopyIds === []
+            ? []
+            : Book::query()->whereIn('id', $singleCopyIds)->pluck('availability', 'id')->all();
+
+        $books->through(function ($row) use ($availabilityById) {
+            $sampleId = (int) $row->sample_id;
+            $copies = (int) $row->copies;
+
+            return [
+                'title_statement' => $row->title_statement,
+                'main_author' => $row->main_author,
+                'pub_year' => $row->pub_year,
+                'content_type' => $row->content_type,
+                'copies' => $copies,
+                'sample_id' => $sampleId,
+                'availability' => $copies === 1 ? ($availabilityById[$sampleId] ?? null) : null,
+            ];
+        });
+
+        return Inertia::render('Books/Index', [
+            'books' => $books,
+            'programs' => $programs,
+            'filters' => $this->catalogFiltersFromRequest($request),
+            'hasActiveQuery' => true,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function catalogFiltersFromRequest(Request $request): array
+    {
+        return [
+            'show_all' => $request->boolean('show_all'),
+            'search' => $request->input('search', ''),
+            'program' => $request->input('program', ''),
+            'year_filter' => $request->input('year_filter', ''),
+            'year1' => $request->input('year1', ''),
+            'year2' => $request->input('year2', ''),
+            'status' => $request->input('status', ''),
+        ];
     }
     
     public function viewCopies(Request $request)

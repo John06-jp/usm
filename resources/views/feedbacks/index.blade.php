@@ -1,10 +1,5 @@
 @extends('layouts.sec')
 
-@section('styles')
-    <link rel="stylesheet" href="{{ asset('css/tailwind-build.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/attendance_logs/index.css') }}">
-@endsection
-
 @section('content')
 
     <!-- Feedbacks list content (no footer) -->

@@ -73,6 +73,6 @@
         .add-link:hover {
             text-decoration: underline;
         }
-        * {
-    border-radius: 5 !important;
+        .legacy-page-content * {
+    border-radius: 0 !important;
 }

@@ -14,6 +14,7 @@
     @stack('styles')
     @yield('styles')
 
+    @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/admin-shell.jsx'])
     <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
 </head>

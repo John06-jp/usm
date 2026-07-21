@@ -172,7 +172,6 @@
                 <li>It must be an efficient service agency that could readily answers the needs of every library clientele and whole objectives are adequately met by providing reference materials in all the subjects in the curriculum.</li>
             </ol>
         </div>
-    </section>
 
 
     <section class="goals-objectives-section">

@@ -7,13 +7,32 @@
     <title>Library catalog — OPAC</title>
     <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset(config('branding.css_path')) }}">
-    <link rel="stylesheet" href="{{ asset('css/books/landing.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/books/landing.css') }}?v={{ filemtime(public_path('css/books/landing.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/site-responsive.css') }}">
     <link rel="stylesheet" href="{{ asset('css/brand-typography.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/qz-tray/qz-tray.js"></script>
 </head>
 
 <body class="opac-body">
+    @php
+        $defaultBookCover = asset('images/defaultBook.png');
+        $resolveBookCover = static function ($book) use ($defaultBookCover) {
+            $cover = trim((string) ($book->cover_image ?? ''));
+
+            if ($cover === '') {
+                return $defaultBookCover;
+            }
+
+            if (filter_var($cover, FILTER_VALIDATE_URL)) {
+                return $cover;
+            }
+
+            return \Illuminate\Support\Facades\Storage::disk('public')->exists($cover)
+                ? asset('storage/' . ltrim($cover, '/'))
+                : $defaultBookCover;
+        };
+    @endphp
+
     @if($searchActive)
         <header class="opac-search-header" role="banner">
             <div class="opac-search-header-inner">
@@ -77,12 +96,19 @@
 
                 <form method="GET" action="{{ route('landing') }}" class="opac-search-form opac-hero-search-form">
                     <div class="opac-hero-search-row">
-                        <input id="searchBar" type="search" name="search" value="{{ request('search') }}"
-                            class="form-control opac-hero-search-input"
-                            placeholder="Title, author, or keywords…"
-                            autocomplete="off"
-                            aria-label="Search catalog">
-                        <button type="submit" class="btn btn-success opac-hero-search-btn">Search</button>
+                        <div class="opac-hero-search-field">
+                            <svg class="opac-hero-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+                                <path d="m16.25 16.25 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                            </svg>
+                            <input id="searchBar" type="search" name="search" value="{{ request('search') }}"
+                                class="opac-hero-search-input"
+                                placeholder="Search books, authors, titles..."
+                                autocomplete="off"
+                                onkeydown="if (event.key === 'Escape') { this.value = ''; }"
+                                aria-label="Search library catalog">
+                        </div>
+                        <button type="submit" class="btn opac-hero-search-btn">Search OPAC</button>
                     </div>
                 </form>
 
@@ -112,9 +138,12 @@
                             @php
                                 $cMeta = $carouselMeta[$book->id] ?? ['copies' => 1, 'is_available' => $book->availability === 'Available'];
                                 $cAvail = ($cMeta['is_available'] ?? false) ? 'Available' : 'Not Available';
+                                $coverUrl = $resolveBookCover($book);
+                                $hasCover = $coverUrl !== $defaultBookCover;
                             @endphp
                             <div class="carosel"
-                                data-img="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/defaultBook.png') }}"
+                                data-img="{{ $coverUrl }}"
+                                data-has-cover="{{ $hasCover ? '1' : '0' }}"
                                 data-title="{{ $book->title_statement }}"
                                 data-author="{{ $book->main_author }}"
                                 data-note="{{ $book->general_note }}"
@@ -130,8 +159,19 @@
                                 onclick="openBookCard(this)">
 
                                 <div class="carosel-cover">
-                                    <img src="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/defaultBook.png') }}"
-                                        alt="{{ $book->title_statement }}">
+                                    @if ($hasCover)
+                                        <img src="{{ $coverUrl }}"
+                                            alt="Cover of {{ $book->title_statement }}"
+                                            onerror="this.onerror=null;this.src='{{ $defaultBookCover }}';">
+                                    @else
+                                        <div class="opac-cover-placeholder" role="img" aria-label="No cover available for {{ $book->title_statement }}">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M5 4.75A2.75 2.75 0 0 1 7.75 2H19v17H7.75A2.75 2.75 0 0 0 5 21.75v-17Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                                                <path d="M5 19.5A2.5 2.5 0 0 1 7.5 17H19M9 7h6M9 10h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                            </svg>
+                                            <span>No cover<br>available</span>
+                                        </div>
+                                    @endif
                                 </div>
                                 <p class="carosel-title">{{ $book->title_statement }}</p>
                             </div>
@@ -304,8 +344,13 @@
                     @endforeach
                 @else
                     @foreach ($books as $book)
+                    @php
+                        $coverUrl = $resolveBookCover($book);
+                        $hasCover = $coverUrl !== $defaultBookCover;
+                    @endphp
                     <div class="opac-result-row"
-                        data-img="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/defaultBook.png') }}"
+                        data-img="{{ $coverUrl }}"
+                        data-has-cover="{{ $hasCover ? '1' : '0' }}"
                         data-title="{{ $book->title_statement }}"
                         data-author="{{ $book->main_author }}"
                         data-note="{{ $book->general_note }}"
@@ -320,7 +365,19 @@
                         data-course="{{ $book->course ?? '' }}"
                         onclick="openBookCard(this)">
                         <div class="opac-result-cover">
-                            <img src="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/defaultBook.png') }}" alt="">
+                            @if ($hasCover)
+                                <img src="{{ $coverUrl }}"
+                                    alt="Cover of {{ $book->title_statement }}"
+                                    onerror="this.onerror=null;this.src='{{ $defaultBookCover }}';">
+                            @else
+                                <div class="opac-cover-placeholder" role="img" aria-label="No cover available for {{ $book->title_statement }}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M5 4.75A2.75 2.75 0 0 1 7.75 2H19v17H7.75A2.75 2.75 0 0 0 5 21.75v-17Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                                        <path d="M5 19.5A2.5 2.5 0 0 1 7.5 17H19M9 7h6M9 10h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                    </svg>
+                                    <span>No cover</span>
+                                </div>
+                            @endif
                         </div>
                         <div class="opac-result-meta">
                             <div class="opac-result-title">
@@ -369,7 +426,14 @@
 
                 <div class="opac-detail-body modal-body-flex">
                     <div class="modal-left opac-detail-cover-col">
-                        <img id="modalImg" src="" alt="Book cover">
+                        <img id="modalImg" src="" alt="Book cover" hidden>
+                        <div id="modalCoverPlaceholder" class="opac-cover-placeholder opac-modal-cover-placeholder" role="img" aria-label="No cover available">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 4.75A2.75 2.75 0 0 1 7.75 2H19v17H7.75A2.75 2.75 0 0 0 5 21.75v-17Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                                <path d="M5 19.5A2.5 2.5 0 0 1 7.5 17H19M9 7h6M9 10h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                            </svg>
+                            <span>No cover<br>available</span>
+                        </div>
                     </div>
                     <div class="modal-right opac-detail-main">
                         <h2 id="modalTitle" class="h4 mb-1"></h2>

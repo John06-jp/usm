@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USM Library</title>
     <link rel="stylesheet" href="{{ asset(config('branding.css_path')) }}">
-    <link rel="stylesheet" href="{{ asset('style.css') }}">
+    <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('img/usm_logo_1954.png') }}">
+    @viteReactRefresh
+    @vite('resources/js/landing-search.jsx')
 </head>
 <body>
 
@@ -47,24 +49,11 @@
 
         <section class="overlay hero-search-feature" aria-label="OPAC book search">
             <h1 class="welcome-text" hidden>WELCOME TO USM LIBRARY</h1>
-            <section class="home-search-panel" aria-labelledby="home-search-title">
-                <p class="home-search-kicker">Online Public Access Catalog</p>
-                <h1 id="home-search-title" class="home-search-title">Search the USM Library collection</h1>
-                <p class="home-search-copy">Find books by title, author, subject, ISBN, or keyword.</p>
-
-                <form action="{{ route('landing') }}" method="GET" class="home-opac-search" role="search">
-                    <input type="hidden" name="view" value="books">
-                    <input
-                        type="search"
-                        name="search"
-                        placeholder="Enter a book title, author, or keyword"
-                        class="home-opac-search__input"
-                        aria-label="Search books in OPAC"
-                        required
-                    >
-                    <button type="submit" class="home-opac-search__button">Search OPAC</button>
-                </form>
-            </section>
+            <div
+                id="landing-search-root"
+                class="home-search-react-root"
+                data-search-action="{{ route('landing') }}"
+            ></div>
         </section>
     </main>
 

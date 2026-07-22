@@ -301,7 +301,28 @@ function applyOpacPayload(payload, card) {
     }
 
     const img = document.getElementById('modalImg');
-    if (img) img.src = coverUrl || '';
+    const coverPlaceholder = document.getElementById('modalCoverPlaceholder');
+    const hasCover = card.dataset.hasCover === '1' && Boolean(coverUrl);
+
+    const showCoverPlaceholder = () => {
+        if (img) {
+            img.hidden = true;
+            img.removeAttribute('src');
+        }
+        if (coverPlaceholder) {
+            coverPlaceholder.hidden = false;
+            coverPlaceholder.setAttribute('aria-label', `No cover available for ${title || 'this book'}`);
+        }
+    };
+
+    if (hasCover && img) {
+        if (coverPlaceholder) coverPlaceholder.hidden = true;
+        img.hidden = false;
+        img.onerror = showCoverPlaceholder;
+        img.src = coverUrl;
+    } else {
+        showCoverPlaceholder();
+    }
 
     renderBibSummary(payload.description || {});
     renderDescriptionDl(payload.description || {});

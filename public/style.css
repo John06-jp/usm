@@ -23,6 +23,7 @@
     position: sticky; 
     top: 0;
     z-index: 1000;
+    margin: 0;
 }
 
 .navbar-content {
@@ -418,6 +419,8 @@
 .hero-section {
     position: relative;
     width: 100%;
+    margin: 0;
+    border: 0;
     min-height: clamp(520px, calc(100vh - 64px), 760px);
     min-height: clamp(520px, calc(100svh - 64px), 760px);
     overflow: hidden;
@@ -434,10 +437,8 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    min-width: 100%;
-    min-height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: center center;
 }
 
 
@@ -452,9 +453,10 @@
 
 .hero-video-feature {
     position: absolute;
-    inset: 0;
+    inset: clamp(16px, 2.5vw, 32px);
     z-index: 0;
     overflow: hidden;
+    border-radius: clamp(16px, 2vw, 28px);
 }
 
 .hero-video-feature::after {
@@ -509,6 +511,12 @@
     text-align: center;
 }
 
+.home-search-react-root {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
 .home-search-panel {
     position: relative;
     overflow: hidden;
@@ -518,12 +526,12 @@
     padding: clamp(18px, 2.5vw, 24px);
     border: 1px solid rgba(255, 255, 255, 0.52);
     border-radius: 20px;
-    background: transparent;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(236, 255, 242, 0.08));
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.68),
         0 28px 80px rgba(0, 35, 15, 0.24);
-    backdrop-filter: blur(12px) saturate(115%);
-    -webkit-backdrop-filter: blur(12px) saturate(115%);
+    backdrop-filter: blur(9px) saturate(120%);
+    -webkit-backdrop-filter: blur(9px) saturate(120%);
 }
 
 .home-search-panel::before {
@@ -568,36 +576,61 @@
 }
 
 .home-opac-search {
+    position: relative;
+    overflow: hidden;
     display: flex;
+    flex: 0 0 880px;
+    flex-shrink: 0;
     flex-direction: row;
+    align-items: center;
     gap: 8px;
-    width: 100%;
-    margin: 0;
-    padding: 6px;
-    border: 1px solid rgba(27, 92, 46, 0.16);
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.44);
+    width: 880px;
+    max-width: calc(100vw - 72px);
+    margin: 0 auto;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.58);
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(230, 255, 239, 0.14));
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        0 14px 34px rgba(0, 0, 0, 0.14);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+        inset 0 1px 0 rgba(255, 255, 255, 0.78),
+        inset 0 -1px 0 rgba(20, 82, 39, 0.08),
+        0 16px 38px rgba(0, 35, 15, 0.2);
+    backdrop-filter: blur(22px) saturate(145%);
+    -webkit-backdrop-filter: blur(22px) saturate(145%);
+}
+
+.home-opac-search::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(110deg, rgba(255, 255, 255, 0.42), transparent 38%, rgba(255, 215, 0, 0.08));
+    pointer-events: none;
+}
+
+.home-opac-search > * {
+    position: relative;
+    z-index: 1;
+}
+
+.home-opac-search__icon {
+    flex: 0 0 auto;
+    margin-left: 10px;
+    color: #174c2b;
 }
 
 .home-opac-search__input {
     flex: 1;
     min-width: 0;
-    min-height: 44px;
-    padding: 0 14px;
-    border: 1px solid rgba(27, 92, 46, 0.2);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.9);
+    height: 38px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
     color: #17331f;
     font-size: 0.92rem;
     outline: none;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.5),
-        0 10px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -606,18 +639,39 @@
 }
 
 .home-opac-search__input:focus {
-    background: rgba(255, 255, 255, 0.62);
-    border-color: var(--primary-yellow);
+    background: transparent;
+    box-shadow: none;
+}
+
+.home-opac-search:focus-within {
+    border-color: rgba(30, 76, 119, 0.9);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.46), rgba(230, 255, 239, 0.22));
     box-shadow:
-        0 0 0 4px rgba(255, 215, 0, 0.28),
-        0 10px 24px rgba(0, 0, 0, 0.18);
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 0 0 4px rgba(30, 76, 119, 0.24),
+        0 16px 38px rgba(0, 35, 15, 0.18);
+}
+
+.home-opac-search__clear {
+    display: grid;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.38);
+    color: #214d30;
+    cursor: pointer;
 }
 
 .home-opac-search__button {
-    min-height: 44px;
-    padding: 0 18px;
+    flex: 0 0 126px;
+    width: 126px;
+    height: 38px;
+    padding: 0 16px;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
+    border-radius: 999px;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0)),
         rgba(255, 215, 0, 0.62);
@@ -641,6 +695,10 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.5),
         0 16px 32px rgba(0, 0, 0, 0.22);
     transform: translateY(-1px);
+}
+
+.home-opac-search__button:active {
+    transform: scale(0.97);
 }
 
 .image-gallery-section,
@@ -782,6 +840,11 @@
         padding: 24px 14px;
     }
 
+    .hero-video-feature {
+        inset: 12px;
+        border-radius: 16px;
+    }
+
     .hero-video-caption {
         padding: 12px;
     }
@@ -792,13 +855,42 @@
     }
 
     .home-opac-search {
-        flex-direction: column;
+        flex-basis: calc(100vw - 56px);
+        width: calc(100vw - 56px);
+        max-width: none;
+    }
+
+    .home-opac-search__icon,
+    .home-opac-search__clear {
+        display: none;
     }
 
     .home-opac-search__button {
-        width: 100%;
+        flex-basis: 106px;
+        width: 106px;
+        padding-inline: 12px;
     }
 
+}
+
+@media (max-width: 479px) {
+    .home-opac-search {
+        flex-basis: calc(100vw - 28px);
+        width: calc(100vw - 28px);
+        gap: 5px;
+        padding: 3px;
+    }
+
+    .home-opac-search__input {
+        font-size: 0.82rem;
+    }
+
+    .home-opac-search__button {
+        flex-basis: 96px;
+        width: 96px;
+        padding-inline: 10px;
+        font-size: 0.8rem;
+    }
 }
 
 @media (max-height: 520px) and (orientation: landscape) {

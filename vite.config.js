@@ -7,7 +7,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.jsx', 'resources/js/admin-shell.jsx'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.jsx',
+                'resources/js/admin-shell.jsx',
+                'resources/js/landing-search.jsx',
+            ],
             refresh: true,
         }),
         react({

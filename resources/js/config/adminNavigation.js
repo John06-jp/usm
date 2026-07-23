@@ -5,8 +5,8 @@
 export const adminNavigation = [
     {
         label: 'Home',
-        href: '/book',
-        routeName: 'book.index',
+        href: '/',
+        routeName: 'home',
         icon: 'Home',
     },
     {
@@ -27,6 +27,18 @@ export const adminNavigation = [
         ],
     },
     {
+        label: 'Catalog',
+        icon: 'BookMarked',
+        children: [
+            { label: 'Books', href: '/book', routeNames: ['book.index', 'book.show', 'book.edit'] },
+            { label: 'Add Book', href: '/book/create', routeName: 'book.create' },
+            { label: 'Copy Cataloging', href: '/catalog/copy/openlibrary', routeName: 'catalog.copy.openlibrary.form' },
+            { label: 'E-Resources', href: '/ebooks', routeName: 'ebooks.index', routePrefix: 'ebooks.' },
+            { label: 'Archived Books', href: '/staff/books/archived', routeName: 'books.archived' },
+            { label: 'Trash', href: '/staff/books/trash', routeName: 'books.trash' },
+        ],
+    },
+    {
         label: 'OPAC',
         href: '/opac',
         routeName: 'landing',
@@ -37,7 +49,6 @@ export const adminNavigation = [
         icon: 'Library',
         children: [
             { label: 'Circulation', href: '/logs', routeName: 'logs.index', adminOnly: true },
-            { label: 'Copy Cataloging', href: '/catalog/copy/openlibrary', routeName: 'catalog.copy.openlibrary.form' },
             { label: 'Circulation Policy', href: '/admin/circulation-policy', routeName: 'circulation.policy.edit', adminOnly: true },
         ],
     },
@@ -105,7 +116,9 @@ export function filterNavigation(items, isAdmin) {
 
 function findTrail(items, routeName, parents = []) {
     for (const item of items) {
-        if (item.routeName === routeName) {
+        const routeNames = item.routeNames ?? (item.routeName ? [item.routeName] : []);
+
+        if (routeNames.includes(routeName)) {
             return [...parents, item];
         }
 

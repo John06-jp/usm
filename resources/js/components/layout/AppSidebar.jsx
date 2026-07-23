@@ -2,6 +2,7 @@ import { useShellProps } from '@/context/ShellPropsContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
+    BookMarked,
     BookOpen,
     ChevronRight,
     ClipboardCheck,
@@ -45,6 +46,7 @@ import { cn } from '@/lib/utils';
 
 const iconMap = {
     Home,
+    BookMarked,
     ClipboardCheck,
     Database,
     BookOpen,
